@@ -3,7 +3,7 @@
 [![Latest NPM release](https://img.shields.io/npm/v/jse-eval.svg)](https://www.npmjs.com/package/jse-eval)
 [![Minzipped size](https://badgen.net/bundlephobia/minzip/jse-eval)](https://bundlephobia.com/result?p=jse-eval)
 [![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/donmccurdy/jse-eval/blob/master/LICENSE)
-[![CI](https://github.com/donmccurdy/jse-eval/workflows/CI/badge.svg?branch=master&event=push)](https://github.com/donmccurdy/jse-eval/actions?query=workflow%3ACI)
+[![CI](https://github.com/6utt3rfly/jse-eval/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/6utt3rfly/jse-eval/actions?query=workflow%3ACI)
 
 ## Credits
 Heavily based on [expression-eval](https://github.com/donmccurdy/expression-eval] and [jsep](https://github.com/EricSmekens/jsep),
