@@ -297,15 +297,17 @@ export default class ExpressionEval {
 
   private evaluateMember(node: jsep.MemberExpression) {
     return this.eval(node.object, (object) => this
-      .evalSyncAsync(node.computed
-        ? this.eval(node.property)
-        : (node.property as jsep.Identifier).name,
+      .evalSyncAsync(
+        node.computed
+          ? this.eval(node.property)
+          : (node.property as jsep.Identifier).name,
         (key: string) => {
           if (/^__proto__|prototype|constructor$/.test(key)) {
             throw Error(`Access to member "${key}" disallowed.`);
           }
           return [object, (node.optional ? (object || {}) : object)[key], key];
-        }));
+        })
+    );
   }
 
   private evalThisExpression() {
@@ -495,10 +497,10 @@ export default class ExpressionEval {
       this.evalCall(node.tag),
       this.evalSyncAsync(
         this.evalArray(node.quasi.expressions),
-          exprs => [
-            node.quasi.quasis.map(q => q.value.cooked),
-            ...exprs,
-          ]
+        exprs => [
+          node.quasi.quasis.map(q => q.value.cooked),
+          ...exprs,
+        ]
       ),
     ];
     const apply = ([[fn, caller], args]) => fn.apply(caller, args);
@@ -516,15 +518,19 @@ export default class ExpressionEval {
           str += expressions[i];
         }
         return str;
-        }, '')
+      }, '')
     );
   }
 
-  protected static construct(ctor: () => unknown, args: unknown[], node): unknown {
+  protected static construct(
+    ctor: () => unknown,
+    args: unknown[],
+    node: jsep.CallExpression | NewExpression
+  ): unknown {
     try {
       return new (Function.prototype.bind.apply(ctor, [null].concat(args)))();
     } catch (e) {
-      throw new Error(`${ExpressionEval.nodeFunctionName(node.callee)} is not a constructor`);
+      throw new Error(`${ExpressionEval.nodeFunctionName(node.callee as AnyExpression)} is not a constructor`);
     }
   }
 

@@ -15,7 +15,8 @@
     "dev": "microbundle watch",
     "build": "microbundle",
     "test": "node test.js | tap-spec",
-    "preversion": "npm run build && npm test",
+    "lint": "eslint *.ts",
+    "preversion": "npm run build && npm test && npm run lint",
     "postversion": "git push && git push --tags && npm publish"
   },
   "keywords": [
