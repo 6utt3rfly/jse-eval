@@ -1,6 +1,6 @@
 require('source-map-support').install();
 
-const expr = require('./dist/expression-eval.js');
+const expr = require('./dist/jse-eval.js');
 const tape = require('tape');
 expr.parse.plugins.register(
   require('@jsep-plugin/arrow'),
