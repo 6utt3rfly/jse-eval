@@ -17,7 +17,7 @@
     "test": "node test.js | tap-spec",
     "lint": "eslint *.ts",
     "prepare": "husky install",
-    "ci": "npm run lint && npm test && npm run build",
+    "ci": "npm run lint && npm run build && npm test",
     "release": "semantic-release",
     "release:test": "semantic-release --dry-run --no-cli --debug"
   },
