@@ -26,7 +26,6 @@ type AnyExpression = jsep.ArrayExpression
   | jsep.ConditionalExpression
   | jsep.Identifier
   | jsep.Literal
-  | jsep.LogicalExpression
   | jsep.ThisExpression
   | jsep.UnaryExpression
   | ArrowExpression
@@ -55,6 +54,7 @@ export default class ExpressionEval {
     'ConditionalExpression': ExpressionEval.prototype.evalConditionalExpression,
     'Identifier': ExpressionEval.prototype.evalIdentifier,
     'Literal': ExpressionEval.evalLiteral,
+    'OptionalMemberExpression': ExpressionEval.prototype.evalMemberExpression, // acorn uses this
     'MemberExpression': ExpressionEval.prototype.evalMemberExpression,
     'ThisExpression': ExpressionEval.prototype.evalThisExpression,
     'UnaryExpression': ExpressionEval.prototype.evalUnaryExpression,
@@ -216,7 +216,7 @@ export default class ExpressionEval {
    * Note: For optimization, there are a few places where it makes sense
    * to directly check `this.isAsync` to use Promise.all(),
    * `promisesOrResults = expressions.map(v => this.eval(v))`
-   *   coulld result in an array of results (sync) or promises (async)
+   *   could result in an array of results (sync) or promises (async)
    */
   private evalSyncAsync(val: unknown, cb: (unknown) => void) {
     if (this.isAsync) {
@@ -244,7 +244,7 @@ export default class ExpressionEval {
       : toFullArray(mapped);
   }
 
-  private evalBinaryExpression(node: jsep.BinaryExpression | jsep.LogicalExpression) {
+  private evalBinaryExpression(node: jsep.BinaryExpression) {
     if (node.operator === '||') {
       return this.eval(node.left, left => left || this.eval(node.right));
     } else if (node.operator === '&&') {
@@ -304,7 +304,7 @@ export default class ExpressionEval {
           if (/^__proto__|prototype|constructor$/.test(key)) {
             throw Error(`Access to member "${key}" disallowed.`);
           }
-          return [object, object[key], key];
+          return [object, (node.optional ? (object || {}) : object)[key], key];
         }));
   }
 
@@ -534,6 +534,9 @@ export default class ExpressionEval {
     caller?: AnyExpression,
   ): [() => unknown, AnyExpression] {
     if (typeof fn !== 'function') {
+      if (!fn && caller && caller.optional) {
+        return [() => undefined, callee];
+      }
       const name = ExpressionEval.nodeFunctionName(caller || callee);
       throw new Error(`'${name}' is not a function`);
     }

@@ -2,26 +2,28 @@ require('source-map-support').install();
 
 const expr = require('./dist/expression-eval.js');
 const tape = require('tape');
-expr.parse.plugins.register(require('@jsep-plugin/arrow'));
-expr.parse.plugins.register(require('@jsep-plugin/assignment'));
-expr.parse.plugins.register(require('@jsep-plugin/async-await'));
-expr.parse.plugins.register(require('@jsep-plugin/new'));
-expr.parse.plugins.register(require('@jsep-plugin/object'));
-expr.parse.plugins.register(require('@jsep-plugin/regex'));
-expr.parse.plugins.register(require('@jsep-plugin/spread'));
-expr.parse.plugins.register(require('@jsep-plugin/template'));
-expr.parse.plugins.register(require('@jsep-plugin/ternary'));
+expr.parse.plugins.register(
+  require('@jsep-plugin/arrow'),
+  require('@jsep-plugin/assignment'),
+  require('@jsep-plugin/async-await'),
+  require('@jsep-plugin/new'),
+  require('@jsep-plugin/object'),
+  require('@jsep-plugin/regex'),
+  require('@jsep-plugin/spread'),
+  require('@jsep-plugin/template'),
+  require('@jsep-plugin/ternary')
+);
 
 const fixtures = [
 
   // array expression
-  {expr: '([1,2,3])[0]',               expected: 1     },
-  {expr: '(["one","two","three"])[1]', expected: 'two' },
-  {expr: '([true,false,true])[2]',     expected: true  },
-  {expr: '([1,true,"three"]).length',  expected: 3     },
-  {expr: 'isArray([1,2,3])',           expected: true  },
-  {expr: 'list[3]',                    expected: 4     },
-  {expr: 'numMap[1 + two]',            expected: 'three'},
+  {expr: '([1,2,3])[0]',               expected: 1       },
+  {expr: '(["one","two","three"])[1]', expected: 'two'   },
+  {expr: '([true,false,true])[2]',     expected: true    },
+  {expr: '([1,true,"three"]).length',  expected: 3       },
+  {expr: 'isArray([1,2,3])',           expected: true    },
+  {expr: 'list[3]',                    expected: 4       },
+  {expr: 'numMap[1 + two]',            expected: 'three' },
 
   // binary expression
   {expr: '1+2',         expected: 3},
@@ -72,18 +74,23 @@ const fixtures = [
   {expr: '1 >= 2',          expected: false },
 
   // logical expression lazy evaluation
-  {expr: 'true || throw()',  expected: true  },
-  {expr: 'false || true',    expected: true  },
+  {expr: 'true || throw()',  expected: true   },
+  {expr: 'false || true',    expected: true   },
   {expr: 'false && throw()', expected: false  },
   {expr: 'true && false',    expected: false  },
 
   // member expression
-  {expr: 'foo.bar',      expected: 'baz' },
-  {expr: 'foo["bar"]',   expected: 'baz' },
-  {expr: 'foo[foo.bar]', expected: 'wow' },
+  {expr: 'foo.bar',      expected: 'baz'     },
+  {expr: 'foo["bar"]',   expected: 'baz'     },
+  {expr: 'foo[foo.bar]', expected: 'wow'     },
+  {expr: 'foo?.bar',     expected: 'baz'     },
+  {expr: 'foo?.["bar"]', expected: 'baz'     },
+  {expr: 'unknown?.x',   expected: undefined },
 
   // call expression with member
-  {expr: 'foo.func("bar")', expected: 'baz'},
+  {expr: 'foo.func("bar")',  expected: 'baz'     },
+  {expr: 'foo?.func("bar")', expected: 'baz'     },
+  {expr: 'xxx?.func("bar")', expected: undefined },
 
   // unary expression
   {expr: '-one',   expected: -1   },
