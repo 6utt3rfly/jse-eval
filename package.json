@@ -17,7 +17,7 @@
     "test": "node test.js | tap-spec",
     "lint": "eslint *.ts",
     "prepare": "husky install",
-    "preversion": "npm run build && npm test && npm run lint",
+    "ci": "npm run lint && npm test && npm run build",
     "release": "semantic-release",
     "release:test": "semantic-release --dry-run --no-cli --debug"
   },
@@ -80,7 +80,18 @@
     "LICENSE",
     "package.json"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "release": {
+    "branches": [
+      "+([0-9])?(.{+([0-9]),x}).x",
+      "main",
+      "next",
+      "next-major",
+      {"name": "beta", "prerelease": true},
+      {"name": "alpha", "prerelease": true}
+    ],
     "plugins": [
       [
         "@semantic-release/commit-analyzer",
