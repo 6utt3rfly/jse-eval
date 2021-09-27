@@ -6,7 +6,7 @@
 [![CI](https://github.com/6utt3rfly/jse-eval/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/6utt3rfly/jse-eval/actions?query=workflow%3ACI)
 
 ## Credits
-Heavily based on [expression-eval](https://github.com/donmccurdy/expression-eval] and [jsep](https://github.com/EricSmekens/jsep),
+Heavily based on [expression-eval](https://github.com/donmccurdy/expression-eval) and [jsep](https://github.com/EricSmekens/jsep),
 with thanks to their awesome work.
 
 _Forked from [expression-eval](https://github.com/donmccurdy/expression-eval]) v5.0.0. Many thanks to @donmccurdy for the initial package_
@@ -172,12 +172,13 @@ Although this package does [avoid the use of `eval()`](https://developer.mozilla
 ## Contributing
 
 Want to file a bug, contribute some code, or improve documentation?
-Excellent! Read up on our guidelines for [contributing][contributing] and then check out one of our issues labeled as <kbd>[help wanted](https://github.com/angular/angular/labels/help%20wanted)</kbd> or <kbd>[good first issue](https://github.com/angular/angular/labels/good%20first%20issue)</kbd>.
+Excellent! Read up on the guidelines for [contributing](CONTRIBUTING.md)
+and then feel free to submit a PR with your contribution.
 
 ### Code of Conduct
 
 Help us keep this project open and inclusive. Please read and follow
-the [Code of Conduct][codeofconduct].
+the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
