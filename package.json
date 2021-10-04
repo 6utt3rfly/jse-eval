@@ -37,7 +37,9 @@
     "javascript",
     "safe",
     "safe-eval",
-    "esprima"
+    "esprima",
+    "js-eval",
+    "expression-eval"
   ],
   "author": "Shelly (https://github.com/6utt3rfly)",
   "contributors": [
@@ -45,7 +47,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "jsep": "^1.0.3"
+    "jsep": "^1.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
@@ -54,11 +56,11 @@
     "@jsep-plugin/assignment": "^1.0.1",
     "@jsep-plugin/async-await": "^1.0.1",
     "@jsep-plugin/new": "^1.0.1",
-    "@jsep-plugin/object": "^1.0.1",
+    "@jsep-plugin/object": "^1.1.0",
     "@jsep-plugin/regex": "^1.0.1",
     "@jsep-plugin/spread": "^1.0.1",
     "@jsep-plugin/template": "^1.0.1",
-    "@jsep-plugin/ternary": "^1.0.0",
+    "@jsep-plugin/ternary": "^1.0.1",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
     "@types/tape": "^4.13.2",
