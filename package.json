@@ -50,7 +50,7 @@
     "jsep": "^1.1.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^13.1.0",
+    "@commitlint/cli": "^14.1.0",
     "@commitlint/config-angular": "^14.1.0",
     "@jsep-plugin/arrow": "^1.0.1",
     "@jsep-plugin/assignment": "^1.0.1",
