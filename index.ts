@@ -151,15 +151,24 @@ export default class ExpressionEval {
   static addBinaryOp(
     operator: string,
     precedence_or_fn: number | binaryCallback,
-    _function: binaryCallback)
+    _ra_or_callback?: boolean | binaryCallback,
+    _function?: binaryCallback)
     : void {
-    if (_function) {
-      jsep.addBinaryOp(operator, precedence_or_fn as number);
-      ExpressionEval.binops[operator] = _function;
+    let precedence, ra, cb;
+    if (typeof precedence_or_fn === 'function') {
+      cb = precedence_or_fn;
     } else {
-      jsep.addBinaryOp(operator, ExpressionEval.DEFAULT_PRECEDENCE[operator] || 1);
-      ExpressionEval.binops[operator] = precedence_or_fn as binaryCallback;
+      precedence = precedence_or_fn;
+      if (typeof _ra_or_callback === 'function') {
+        cb = _ra_or_callback;
+      } else {
+        ra = _ra_or_callback;
+        cb = _function;
+      }
     }
+
+    jsep.addBinaryOp(operator, precedence || 1, ra);
+    ExpressionEval.binops[operator] = cb;
   }
 
   // inject custom node evaluators (and override existing ones)
