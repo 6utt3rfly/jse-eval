@@ -108,6 +108,7 @@ const fixtures = [
   {expr: '3#4',         expected: 3.4   },
   {expr: '(1 # 2 # 3)', expected: 1.5   }, // Fails with undefined precedence, see issue #45
   {expr: '1 + 2 ~ 3',   expected: 9     }, // ~ is * but with low precedence
+  {expr: '2 ** 3 ** 4', expected: 2 ** 3 ** 4},
 
   // Arrow Functions
   {expr: '[1,2].find(v => v === 2)',                     expected: 2                                  },
@@ -201,6 +202,8 @@ expr.addUnaryOp('@', (a) => {
 expr.addBinaryOp('#', (a, b) => a + b / 10);
 
 expr.addBinaryOp('~', 1, (a, b) => a * b);
+
+expr.addBinaryOp('**', 11, true, (a, b) => a ** b);
 
 expr.addEvaluator('TestNodeType', function(node) { return node.test + this.context.string });
 
