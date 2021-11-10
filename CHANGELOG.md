@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/6utt3rfly/jse-eval/compare/v1.0.1...v1.1.0) (2021-11-10)
+
+
+### Features
+
+* Add right-associative binary operator support ([8e60bb2](https://github.com/6utt3rfly/jse-eval/commit/8e60bb2da844dd8586beffbb302d3c36ab03189a))
+
 ## [1.0.1](https://github.com/6utt3rfly/jse-eval/compare/v1.0.0...v1.0.1) (2021-10-04)
 
 
