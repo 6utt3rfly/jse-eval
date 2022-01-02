@@ -6,3 +6,5 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "build"
+    allow:
+      - dependency-type: "production"
