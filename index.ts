@@ -23,6 +23,7 @@ type AnyExpression = jsep.ArrayExpression
   | jsep.BinaryExpression
   | jsep.MemberExpression
   | jsep.CallExpression
+  | jsep.Compound
   | jsep.ConditionalExpression
   | jsep.Identifier
   | jsep.Literal
@@ -51,6 +52,7 @@ export default class ExpressionEval {
     'LogicalExpression': ExpressionEval.prototype.evalBinaryExpression,
     'BinaryExpression': ExpressionEval.prototype.evalBinaryExpression,
     'CallExpression': ExpressionEval.prototype.evalCallExpression,
+    'Compound': ExpressionEval.prototype.evalCompoundExpression,
     'ConditionalExpression': ExpressionEval.prototype.evalConditionalExpression,
     'Identifier': ExpressionEval.prototype.evalIdentifier,
     'Literal': ExpressionEval.evalLiteral,
@@ -268,6 +270,12 @@ export default class ExpressionEval {
     return this.isAsync
       ? Promise.all(leftRight).then(op)
       : op(leftRight as [operand, operand]);
+  }
+
+  private evalCompoundExpression(node: jsep.Compound) {
+    return this.isAsync
+      ? node.body.reduce((p: Promise<any>, node) => p.then(() => this.eval(node)), Promise.resolve())
+      : node.body.map(v => this.eval(v))[node.body.length - 1]
   }
 
   private evalCallExpression(node: jsep.CallExpression) {

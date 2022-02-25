@@ -134,6 +134,9 @@ const fixtures = [
   {expr: '--a', expected: 0, context: {a: 1}, expObj: {a: 0}},
   {expr: 'a[0] = 3', expected: 3, context: {a: [0, 0]}, expObj: {a: [3, 0]}},
 
+  // compound
+  {expr: 'a=1; b=a; c=a+b;', expected: 2, context: {}, expObj: {a: 1, b: 1, c: 2}},
+
   // new
   {expr: '(new Date(2021, 8)).getFullYear()',             expected: 2021                          },
   {expr: '(new sub.sub2["Date"](2021, 8)).getFullYear()', expected: 2021                          },
