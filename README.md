@@ -31,7 +31,8 @@ _Forked from [expression-eval](https://github.com/donmccurdy/expression-eval]) v
 
 ## Usage
 Evaluates an [estree](https://github.com/estree/estree) expression from [jsep](https://github.com/EricSmekens/jsep)
-(as well as [@babel/parser][], [esprima][], [acorn][], or any other library that parses and returns a valid `estree` expression).
+(as well as [@babel/parser](https://babeljs.io/docs/en/babel-parser), [esprima](https://esprima.org/),
+[acorn](https://github.com/acornjs/acorn), or any other library that parses and returns a valid `estree` expression).
 
 
 ### Install
@@ -140,11 +141,14 @@ This project will try to stay current with all JSEP's node types::
 - `LogicalExpression`/`BinaryExpression`
 - `CallExpression`
 - `ConditionalExpression`
+- `Compound` *
 - `Identifier`
 - `Literal`
 - `MemberExpression`
 - `ThisExpression`
 - `UnaryExpression`
+
+**Compound support will evaluate each expression and return the result of the final one
 
 As well as the optional plugin node types:
 - `ArrowFunctionExpression`
