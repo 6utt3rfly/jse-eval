@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/6utt3rfly/jse-eval/compare/v1.1.0...v1.2.0) (2022-02-25)
+
+
+### Features
+
+* add jsep Compound expression support ([6393994](https://github.com/6utt3rfly/jse-eval/commit/6393994212375f9c25df57a23437811541426fd4)), closes [#49](https://github.com/6utt3rfly/jse-eval/issues/49)
+
 # [1.1.0](https://github.com/6utt3rfly/jse-eval/compare/v1.0.1...v1.1.0) (2021-11-10)
 
 
