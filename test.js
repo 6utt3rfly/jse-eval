@@ -280,7 +280,7 @@ tape('errors', async (t) => {
   t.throws(() => expr.compile(`a()`)({}), /'a' is not a function/, 'invalid function');
   t.throws(() => expr.compile(`a[b]()`)({a: 1, b: '2'}), /'b' is not a function/, 'invalid dynamic function');
   t.throws(() => expr.compile(`new a()`)({a: () => 1}), /not a constructor/, 'invalid new');
-  t.throws(() => expr.compile('a:1')({a: 1}), /not a function/);
+  t.throws(() => expr.compile('a:1')({a: 1}), /Unexpected ":"/);
 
   try {
     await expr.compileAsync('Promise.reject(new Error("abcd"))')({ Promise, Error });
