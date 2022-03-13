@@ -42,6 +42,10 @@ type AnyExpression = jsep.ArrayExpression
   | TemplateElement
   ;
 
+type JseEvalPlugin = Partial<jsep.IPlugin> & {
+  initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
+}
+
 export default class ExpressionEval {
   static jsep = jsep;
   static parse = jsep;
@@ -178,28 +182,46 @@ export default class ExpressionEval {
     ExpressionEval.evaluators[nodeType] = evaluator;
   }
 
+  static registerPlugin(...plugins: Array<JseEvalPlugin>) {
+    plugins.forEach((p) => {
+      if (p.init) {
+        ExpressionEval.parse.plugins.register(p as jsep.IPlugin);
+      }
+      if (p.initEval) {
+        p.initEval.call(ExpressionEval, ExpressionEval);
+      }
+    });
+  }
 
   // main evaluator method
-  static eval(ast: jsep.Expression, context: Context): unknown {
+  static eval(ast: jsep.Expression, context?: Context): unknown {
     return (new ExpressionEval(context)).eval(ast);
   }
-  static async evalAsync(ast: jsep.Expression, context: Context): Promise<unknown> {
+  static async evalAsync(ast: jsep.Expression, context?: Context): Promise<unknown> {
     return (new ExpressionEval(context, true)).eval(ast);
   }
 
   // compile an expression and return an evaluator
-  static compile(expression: string): (context: Context) => unknown {
+  static compile(expression: string): (context?: Context) => unknown {
     return ExpressionEval.eval.bind(null, ExpressionEval.jsep(expression));
   }
-  static compileAsync(expression: string): (context: Context) => Promise<unknown> {
+  static compileAsync(expression: string): (context?: Context) => Promise<unknown> {
     return ExpressionEval.evalAsync.bind(null, ExpressionEval.jsep(expression));
   }
 
+  // compile and evaluate
+  static evalExpr(expression: string, context?: Context): unknown {
+    return ExpressionEval.compile(expression)(context);
+  }
+  static evalExprAsync(expression: string, context?: Context): unknown {
+    return ExpressionEval.compileAsync(expression)(context);
+  }
 
-  protected context: Context;
-  protected isAsync: boolean;
 
-  constructor(context: Context, isAsync?: boolean) {
+  protected context?: Context;
+  protected isAsync?: boolean;
+
+  constructor(context?: Context, isAsync?: boolean) {
     this.context = context;
     this.isAsync = isAsync;
   }

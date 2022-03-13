@@ -1,9 +1,9 @@
 # jse-eval
 
 [![Latest NPM release](https://img.shields.io/npm/v/jse-eval.svg)](https://www.npmjs.com/package/jse-eval)
-[![Minzipped size](https://badgen.net/bundlephobia/minzip/jse-eval)](https://bundlephobia.com/result?p=jse-eval)
 [![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/donmccurdy/jse-eval/blob/master/LICENSE)
 [![CI](https://github.com/6utt3rfly/jse-eval/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/6utt3rfly/jse-eval/actions?query=workflow%3ACI)
+<!-- [![Minzipped size](https://badgen.net/bundlephobia/minzip/jse-eval)](https://bundlephobia.com/result?p=jse-eval) -->
 
 ## Credits
 Heavily based on [expression-eval](https://github.com/donmccurdy/expression-eval) and [jsep](https://github.com/EricSmekens/jsep),
@@ -48,8 +48,10 @@ Import:
 ```js
 // ES6
 import { parse, evaluate, compile, jsep } from 'jse-eval';
+
 // CommonJS
 const { parse, evaluate, compile, jsep } = require('jse-eval');
+
 // UMD / standalone script
 const { parse, evaluate, compile, jsep } = window.expressionEval;
 ```
@@ -105,10 +107,20 @@ const fn = compileAsync('foo.bar + 10');
 fn({foo: {bar: 'baz'}}); // 'baz10'
 ```
 
+### One-Line Parse + Evaluation
+```javascript
+import { evalExpr } from 'jse-eval';
+evalExpr('foo.bar + 10', {foo: {bar: 'baz'}}); // baz10
+
+// alternatively:
+import { evalExprAsync } from 'jse-eval';
+evalExprAsync('foo.bar + 10', {foo: {bar: 'baz'}}); // baz10
+```
+
 ### JSEP Plugins
 ```javascript
-const { jsep } = require('jse-eval');
-jsep.plugins.register(
+import { registerPlugin } from 'jse-eval';
+registerPlugin(
   require('@jsep-plugin/arrow'),
   require('@jsep-plugin/assignment'),
   require('@jsep-plugin/async-await'),
@@ -118,6 +130,14 @@ jsep.plugins.register(
   require('@jsep-plugin/spread'),
   require('@jsep-plugin/template'),
   require('@jsep-plugin/ternary')
+);
+
+// or alternatively:
+const { jsep } = require('jse-eval');
+jsep.plugins.register(
+  require('@jsep-plugin/arrow'),
+  require('@jsep-plugin/assignment'),
+  ...
 );
 ```
 
@@ -135,20 +155,52 @@ or `this.evalSyncAsync()` to help.
   throwing an error for an unknown node type. If any other behavior is desired, this can be overridden
   by providing a new `default` evaluator.
 
+Extensions may also be added as plugins using the `registerPlugin(myPlugin1, myPlugin2...)` method.
+The plugins are extensions of the JSEP format. If the `init` method is defined in the plugin,
+then the plugin will be added to JSEP, and/or if the `initEval` method is defined in the plugin,
+then the `initEval` method will be called with the JseEval class as both `this` and as an argument
+so the plugin code may extend as necessary.
+
+### Example Extensions:
+```javascript
+import * as expr from 'jse-eval';
+
+expr.addBinaryOp('**', 11, true, (a, b) => a ** b);
+console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
+
+expr.addBinaryOp('^', 11, (a, b) => Math.pow(a, b)); // Replace XOR with Exponent
+console.log(expr.evalExpr('3^2')); // 9
+
+expr.addEvaluator('TestNodeType', function(node) {
+  return node.test + this.context.string
+});
+console.log(expr.eval({ type: 'TestNodeType', test: 'testing ' }, { string: 'jse-eval' })); // 'testing jse-eval'
+
+const myPlugin = {
+  name: 'Exponentiation',
+  init(jsep) {
+    jsep.addBinaryOp('**', 11, true);
+  },
+  initEval(JseEval) {
+    JseEval.binops['**'] = (a, b) => a ** b;
+  },
+};
+expr.registerPlugin(myPlugin);
+console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
+```
+
 ### Node Types Supported:
 This project will try to stay current with all JSEP's node types::
 - `ArrayExpression`
 - `LogicalExpression`/`BinaryExpression`
 - `CallExpression`
 - `ConditionalExpression`
-- `Compound` *
+- `Compound` *Compound support will evaluate each expression and return the result of the final one*
 - `Identifier`
 - `Literal`
 - `MemberExpression`
 - `ThisExpression`
 - `UnaryExpression`
-
-**Compound support will evaluate each expression and return the result of the final one
 
 As well as the optional plugin node types:
 - `ArrowFunctionExpression`
