@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/6utt3rfly/jse-eval/compare/v1.2.0...v1.3.0) (2022-03-13)
+
+
+### Features
+
+* add `registerPlugin` method ([86939ac](https://github.com/6utt3rfly/jse-eval/commit/86939acacc3b60acaeece6941583c2e5600ede67)), closes [#52](https://github.com/6utt3rfly/jse-eval/issues/52)
+
 # [1.2.0](https://github.com/6utt3rfly/jse-eval/compare/v1.1.0...v1.2.0) (2022-02-25)
 
 
