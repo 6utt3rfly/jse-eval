@@ -4,11 +4,12 @@
   "description": "JavaScript expression parsing and evaluation.",
   "source": "index.ts",
   "type": "module",
-  "main": "dist/jse-eval.js",
+  "main": "dist/jse-eval.cjs",
   "module": "dist/jse-eval.module.js",
   "exports": {
-    "import": "./dist/jse-eval.module.js",
-    "requires": "./dist/jse-eval.js"
+    "default": "./dist/jse-eval.module.js",
+    "import": "./dist/jse-eval.modern.js",
+    "require": "./dist/jse-eval.cjs"
   },
   "unpkg": "dist/jse-eval.umd.js",
   "types": "dist/index.d.ts",
@@ -19,7 +20,7 @@
   "scripts": {
     "dev": "microbundle watch",
     "build": "microbundle",
-    "test": "node test.js | tap-spec",
+    "test": "node test.js | tap-spec && npm run --prefix test-cjs test",
     "lint": "eslint *.ts",
     "prepare": "husky install",
     "ci": "npm run lint && npm run build && npm test",
@@ -139,13 +140,13 @@
         }
       ],
       "@semantic-release/changelog",
-      "@semantic-release/git",
       [
         "@semantic-release/npm",
         {
           "tarballDir": "./"
         }
       ],
+      "@semantic-release/git",
       [
         "@semantic-release/github",
         {
