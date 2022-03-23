@@ -1,6 +1,6 @@
 {
   "name": "jse-eval",
-  "version": "1.4.0-beta.1",
+  "version": "1.4.0",
   "description": "JavaScript expression parsing and evaluation.",
   "source": "index.ts",
   "type": "module",

@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/6utt3rfly/jse-eval/compare/v1.3.0...v1.4.0) (2022-03-23)
+
+
+### Features
+
+* update build system for ESM/CJS ([40051d6](https://github.com/6utt3rfly/jse-eval/commit/40051d62dab3f0ed3ce3c7091a637eccd479682d)), closes [#54](https://github.com/6utt3rfly/jse-eval/issues/54)
+
 # [1.4.0-beta.1](https://github.com/6utt3rfly/jse-eval/compare/v1.3.0...v1.4.0-beta.1) (2022-03-22)
 
 
