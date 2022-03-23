@@ -235,7 +235,7 @@ export default class ExpressionEval {
     return this.evalSyncAsync(evaluator.bind(this)(node), cb);
   }
 
-  /**
+  /*
    * `evalSyncAsync` is a helper to wrap sync/async calls into one so that
    * we don't have to duplicate all of our node type parsers.
    * It's basically like old node callback (hell?), but it works because:
@@ -595,3 +595,23 @@ export default class ExpressionEval {
           && ((callee as jsep.MemberExpression).property as jsep.Identifier).name));
   }
 }
+
+/** NOTE: exporting named + default.
+ * For CJS, these match the static members of the default export, so they still work.
+ */
+export { default as jsep, default as parse } from 'jsep';
+export const DEFAULT_PRECEDENCE = ExpressionEval.DEFAULT_PRECEDENCE;
+export const evaluators = ExpressionEval.evaluators;
+export const binops = ExpressionEval.binops;
+export const unops = ExpressionEval.unops;
+export const assignOps = ExpressionEval.assignOps;
+export const addUnaryOp = ExpressionEval.addUnaryOp;
+export const addBinaryOp = ExpressionEval.addBinaryOp;
+export const addEvaluator = ExpressionEval.addEvaluator;
+export const registerPlugin = ExpressionEval.registerPlugin;
+export const evaluate = ExpressionEval.eval;
+export const evalAsync = ExpressionEval.evalAsync;
+export const compile = ExpressionEval.compile;
+export const compileAsync = ExpressionEval.compileAsync;
+export const evalExpr = ExpressionEval.evalExpr;
+export const evalExprAsync = ExpressionEval.evalExprAsync;

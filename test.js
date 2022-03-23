@@ -1,17 +1,27 @@
-require('source-map-support').install();
+import 'source-map-support/register.js';
+import JseEval from './dist/jse-eval.module.js';
+import { registerPlugin } from './dist/jse-eval.module.js';
+import tape from 'tape';
+import jsepArrow from '@jsep-plugin/arrow';
+import jsepAssignment from '@jsep-plugin/assignment';
+import jsepAsyncAwait from '@jsep-plugin/async-await';
+import jsepNew from '@jsep-plugin/new';
+import jsepObject from '@jsep-plugin/object';
+import jsepRegex from '@jsep-plugin/regex';
+import jsepSpread from '@jsep-plugin/spread';
+import jsepTemplate from '@jsep-plugin/template';
+import jsepTernary from '@jsep-plugin/ternary';
 
-const expr = require('./dist/jse-eval.js');
-const tape = require('tape');
-expr.parse.plugins.register(
-  require('@jsep-plugin/arrow'),
-  require('@jsep-plugin/assignment'),
-  require('@jsep-plugin/async-await'),
-  require('@jsep-plugin/new'),
-  require('@jsep-plugin/object'),
-  require('@jsep-plugin/regex'),
-  require('@jsep-plugin/spread'),
-  require('@jsep-plugin/template'),
-  require('@jsep-plugin/ternary')
+registerPlugin(
+  jsepArrow,
+  jsepAssignment,
+  jsepAsyncAwait,
+  jsepNew,
+  jsepObject,
+  jsepRegex,
+  jsepSpread,
+  jsepTemplate,
+  jsepTernary
 );
 
 const fixtures = [
@@ -195,20 +205,20 @@ const cloneDeep = (obj) => {
 }
 
 
-expr.addUnaryOp('@', (a) => {
+JseEval.addUnaryOp('@', (a) => {
   if (a === 2) {
     return 'two';
   }
   throw new Error('Unexpected value: ' + a);
 });
 
-expr.addBinaryOp('#', (a, b) => a + b / 10);
+JseEval.addBinaryOp('#', (a, b) => a + b / 10);
 
-expr.addBinaryOp('~', 1, (a, b) => a * b);
+JseEval.addBinaryOp('~', 1, (a, b) => a * b);
 
-expr.addBinaryOp('**', 11, true, (a, b) => a ** b);
+JseEval.addBinaryOp('**', 11, true, (a, b) => a ** b);
 
-expr.addEvaluator('TestNodeType', function(node) { return node.test + this.context.string });
+JseEval.addEvaluator('TestNodeType', function(node) { return node.test + this.context.string });
 
 tape('sync', (t) => {
   const syncFixtures = [
@@ -221,7 +231,7 @@ tape('sync', (t) => {
 
   [...fixtures, ...syncFixtures].forEach((o) => {
     const ctx = cloneDeep(o.context || context);
-    const val = expr.compile(o.expr)(ctx);
+    const val = JseEval.compile(o.expr)(ctx);
     const compare = t[typeof o.expected === 'object' ? 'deepEqual' : 'equal'];
     compare(val, o.expected, `${o.expr} (${val}) === ${o.expected}`);
     if (o.expObj) {
@@ -229,7 +239,7 @@ tape('sync', (t) => {
     }
   });
 
-  const val = expr.eval.bind(null, { type: 'TestNodeType', test: 'testing ' })(context);
+  const val = JseEval.evaluate.bind(null, { type: 'TestNodeType', test: 'testing ' })(context);
   t.equal(val, 'testing string');
 
   t.end();
@@ -250,7 +260,7 @@ tape('async', async (t) => {
 
   for (let o of [...fixtures, ...asyncFixtures]) {
     const ctx = cloneDeep(o.context || asyncContext);
-    const val = await expr.compileAsync(o.expr)(ctx);
+    const val = await JseEval.compileAsync(o.expr)(ctx);
     const compare = t[typeof o.expected === 'object' ? 'deepEqual' : 'equal'];
     compare(val, o.expected, `${o.expr} (${val}) === ${o.expected}`);
     if (o.expObj) {
@@ -258,7 +268,7 @@ tape('async', async (t) => {
     }
   }
 
-  const val = await expr.evalAsync.bind(null, { type: 'TestNodeType', test: 'testing ' })(context);
+  const val = await JseEval.evalAsync.bind(null, { type: 'TestNodeType', test: 'testing ' })(context);
   t.equal(val, 'testing string');
 
   t.end();
@@ -266,24 +276,24 @@ tape('async', async (t) => {
 
 tape('errors', async (t) => {
   const expectedMsg = /Access to member "\w+" disallowed/;
-  t.throws(() => expr.compile(`o.__proto__`)({o: {}}), expectedMsg, '.__proto__');
-  t.throws(() => expr.compile(`o.prototype`)({o: {}}), expectedMsg, '.prototype');
-  t.throws(() => expr.compile(`o.constructor`)({o: {}}), expectedMsg, '.constructor');
-  t.throws(() => expr.compile(`o['__proto__']`)({o: {}}), expectedMsg, '["__proto__"]');
-  t.throws(() => expr.compile(`o['prototype']`)({o: {}}), expectedMsg, '["prototype"]');
-  t.throws(() => expr.compile(`o['constructor']`)({o: {}}), expectedMsg, '["constructor"]');
-  t.throws(() => expr.compile(`o[p]`)({o: {}, p: '__proto__'}), expectedMsg, '[~__proto__]');
-  t.throws(() => expr.compile(`o[p]`)({o: {}, p: 'prototype'}), expectedMsg, '[~prototype]');
-  t.throws(() => expr.compile(`o[p]`)({o: {}, p: 'constructor'}), expectedMsg, '[~constructor]');
+  t.throws(() => JseEval.compile(`o.__proto__`)({o: {}}), expectedMsg, '.__proto__');
+  t.throws(() => JseEval.compile(`o.prototype`)({o: {}}), expectedMsg, '.prototype');
+  t.throws(() => JseEval.compile(`o.constructor`)({o: {}}), expectedMsg, '.constructor');
+  t.throws(() => JseEval.compile(`o['__proto__']`)({o: {}}), expectedMsg, '["__proto__"]');
+  t.throws(() => JseEval.compile(`o['prototype']`)({o: {}}), expectedMsg, '["prototype"]');
+  t.throws(() => JseEval.compile(`o['constructor']`)({o: {}}), expectedMsg, '["constructor"]');
+  t.throws(() => JseEval.compile(`o[p]`)({o: {}, p: '__proto__'}), expectedMsg, '[~__proto__]');
+  t.throws(() => JseEval.compile(`o[p]`)({o: {}, p: 'prototype'}), expectedMsg, '[~prototype]');
+  t.throws(() => JseEval.compile(`o[p]`)({o: {}, p: 'constructor'}), expectedMsg, '[~constructor]');
 
-  t.throws(() => expr.compile(`a.b`)({}), /of undefined/, 'b of undefined');
-  t.throws(() => expr.compile(`a()`)({}), /'a' is not a function/, 'invalid function');
-  t.throws(() => expr.compile(`a[b]()`)({a: 1, b: '2'}), /'b' is not a function/, 'invalid dynamic function');
-  t.throws(() => expr.compile(`new a()`)({a: () => 1}), /not a constructor/, 'invalid new');
-  t.throws(() => expr.compile('a:1')({a: 1}), /Unexpected ":"/);
+  t.throws(() => JseEval.compile(`a.b`)({}), /of undefined/, 'b of undefined');
+  t.throws(() => JseEval.compile(`a()`)({}), /'a' is not a function/, 'invalid function');
+  t.throws(() => JseEval.compile(`a[b]()`)({a: 1, b: '2'}), /'b' is not a function/, 'invalid dynamic function');
+  t.throws(() => JseEval.compile(`new a()`)({a: () => 1}), /not a constructor/, 'invalid new');
+  t.throws(() => JseEval.compile('a:1')({a: 1}), /Unexpected ":"/);
 
   try {
-    await expr.compileAsync('Promise.reject(new Error("abcd"))')({ Promise, Error });
+    await JseEval.compileAsync('Promise.reject(new Error("abcd"))')({ Promise, Error });
     t.throws(() => {});
   } catch (e) {
     t.throws(() => { throw e; }, /abcd/, 'async rejection');

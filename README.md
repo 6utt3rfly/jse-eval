@@ -53,7 +53,7 @@ import { parse, evaluate, compile, jsep } from 'jse-eval';
 const { parse, evaluate, compile, jsep } = require('jse-eval');
 
 // UMD / standalone script
-const { parse, evaluate, compile, jsep } = window.expressionEval;
+const { parse, evaluate, compile, jsep } = window.jseEval;
 ```
 
 ## API
@@ -179,10 +179,11 @@ console.log(expr.eval({ type: 'TestNodeType', test: 'testing ' }, { string: 'jse
 const myPlugin = {
   name: 'Exponentiation',
   init(jsep) {
+    // if only adding to jsep. Otherwise it's redundant with initEval
     jsep.addBinaryOp('**', 11, true);
   },
   initEval(JseEval) {
-    JseEval.binops['**'] = (a, b) => a ** b;
+    JseEval.addBinaryOp('**', (a, b) => a ** b);
   },
 };
 expr.registerPlugin(myPlugin);
