@@ -7,7 +7,6 @@
   "main": "dist/jse-eval.cjs",
   "module": "dist/jse-eval.module.js",
   "exports": {
-    "default": "./dist/jse-eval.module.js",
     "import": "./dist/jse-eval.modern.js",
     "require": "./dist/jse-eval.cjs"
   },
