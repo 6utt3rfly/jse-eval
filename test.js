@@ -93,14 +93,14 @@ const fixtures = [
   {expr: 'foo.bar',      expected: 'baz'     },
   {expr: 'foo["bar"]',   expected: 'baz'     },
   {expr: 'foo[foo.bar]', expected: 'wow'     },
-  // {expr: 'foo?.bar',     expected: 'baz'     }, // waiting on https://github.com/EricSmekens/jsep/pull/185
-  // {expr: 'foo?.["bar"]', expected: 'baz'     },
-  // {expr: 'unknown?.x',   expected: undefined },
+  {expr: 'foo?.bar',     expected: 'baz'     },
+  {expr: 'foo?.["bar"]', expected: 'baz'     },
+  {expr: 'unknown?.x',   expected: undefined },
 
   // call expression with member
   {expr: 'foo.func("bar")',  expected: 'baz'     },
-  // {expr: 'foo?.func("bar")', expected: 'baz'     }, // waiting on https://github.com/EricSmekens/jsep/pull/185
-  // {expr: 'xxx?.func("bar")', expected: undefined },
+  {expr: 'foo?.func("bar")', expected: 'baz'     },
+  {expr: 'xxx?.func("bar")', expected: undefined },
 
   // unary expression
   {expr: '-one',   expected: -1   },

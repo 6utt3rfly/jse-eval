@@ -4,7 +4,7 @@ import { AwaitExpression } from '@jsep-plugin/async-await';
 import { NewExpression } from '@jsep-plugin/new';
 import { ObjectExpression, Property } from '@jsep-plugin/object';
 import { SpreadElement } from '@jsep-plugin/spread';
-import { TaggedTemplateExpression, TemplateElement, TemplateLiteral } from '@jsep-plugin/template';
+import { TaggedTemplateExpression, TemplateLiteral } from '@jsep-plugin/template';
 import jsep from 'jsep';
 
 /**
@@ -19,28 +19,7 @@ declare type binaryCallback = (a: operand, b: operand) => operand;
 declare type assignCallback = (obj: Record<string, operand>, key: string, val: operand) => operand;
 declare type evaluatorCallback = (node: AnyExpression, context: Context) => unknown;
 
-type AnyExpression = jsep.ArrayExpression
-  | jsep.BinaryExpression
-  | jsep.MemberExpression
-  | jsep.CallExpression
-  | jsep.Compound
-  | jsep.ConditionalExpression
-  | jsep.Identifier
-  | jsep.Literal
-  | jsep.ThisExpression
-  | jsep.UnaryExpression
-  | ArrowExpression
-  | UpdateExpression
-  | AssignmentExpression
-  | AwaitExpression
-  | NewExpression
-  | ObjectExpression
-  | Property
-  | SpreadElement
-  | TaggedTemplateExpression
-  | TemplateLiteral
-  | TemplateElement
-  ;
+type AnyExpression = jsep.Expression;
 
 type JseEvalPlugin = Partial<jsep.IPlugin> & {
   initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
@@ -411,12 +390,12 @@ export default class ExpressionEval {
 
           let key;
           if (p.type === 'Property') {
-            key = p.key.type === 'Identifier'
+            key = (<jsep.Expression>p.key).type === 'Identifier'
               ? (p.key as jsep.Identifier).name
               : this.eval(p.key).toString();
           } else if (p.type === 'Identifier') {
             key = p.name;
-          } else if (p.type === 'SpreadElement' && p.argument.type === 'Identifier') {
+          } else if (p.type === 'SpreadElement' && (<jsep.Expression>p.argument).type === 'Identifier') {
             key = (p.argument as jsep.Identifier).name;
           } else {
             throw new Error('Unexpected arrow function argument');
@@ -437,7 +416,7 @@ export default class ExpressionEval {
           arrowContext[key] = val;
           keys.push(key);
         });
-      } else if (param.type === 'SpreadElement' && param.argument.type === 'Identifier') {
+      } else if (param.type === 'SpreadElement' && (<jsep.Expression>param.argument).type === 'Identifier') {
         const key = (param.argument as jsep.Identifier).name;
         arrowContext[key] = arrowArgs.slice(i);
       } else {
@@ -481,7 +460,7 @@ export default class ExpressionEval {
   private getContextAndKey(node: AnyExpression) {
     if (node.type === 'MemberExpression') {
       return this.evalSyncAsync(
-        this.evaluateMember(node),
+        this.evaluateMember(<jsep.MemberExpression>node),
         ([obj, , key]) => [obj, key]
       );
     } else if (node.type === 'Identifier') {
@@ -564,7 +543,7 @@ export default class ExpressionEval {
   protected static construct(
     ctor: () => unknown,
     args: unknown[],
-    node: jsep.CallExpression | NewExpression
+    node: jsep.CallExpression | jsep.Expression
   ): unknown {
     try {
       return new (Function.prototype.bind.apply(ctor, [null].concat(args)))();

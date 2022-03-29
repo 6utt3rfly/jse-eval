@@ -1,5 +1,5 @@
 {
-  "name": "testing-modules",
+  "name": "testing-commonjs",
   "type": "commonjs",
   "main": "test.js",
   "scripts": {
