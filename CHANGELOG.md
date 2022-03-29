@@ -1,3 +1,11 @@
+## [1.4.1](https://github.com/6utt3rfly/jse-eval/compare/v1.4.0...v1.4.1) (2022-03-29)
+
+
+### Bug Fixes
+
+* remove default export ([b2f5d83](https://github.com/6utt3rfly/jse-eval/commit/b2f5d8378ee0b0c7a8f1e3bb28ee7b65071febcd)), closes [#57](https://github.com/6utt3rfly/jse-eval/issues/57)
+* simplify exported typings ([5f8367f](https://github.com/6utt3rfly/jse-eval/commit/5f8367fdf2bdc7b1e4df264b398514ae0daa7a79))
+
 # [1.4.0](https://github.com/6utt3rfly/jse-eval/compare/v1.3.0...v1.4.0) (2022-03-23)
 
 
