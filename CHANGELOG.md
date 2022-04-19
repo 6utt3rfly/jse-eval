@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/6utt3rfly/jse-eval/compare/v1.4.1...v1.5.0) (2022-04-19)
+
+
+### Features
+
+* add `_value` to each node during evaluation ([0a3067b](https://github.com/6utt3rfly/jse-eval/commit/0a3067b8af107ae677bee55efd69995d15721dca))
+
 ## [1.4.1](https://github.com/6utt3rfly/jse-eval/compare/v1.4.0...v1.4.1) (2022-03-29)
 
 
