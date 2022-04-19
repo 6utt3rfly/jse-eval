@@ -1,7 +1,7 @@
 # jse-eval
 
 [![Latest NPM release](https://img.shields.io/npm/v/jse-eval.svg)](https://www.npmjs.com/package/jse-eval)
-[![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/donmccurdy/jse-eval/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/6utt3rfly/jse-eval/blob/master/LICENSE)
 [![CI](https://github.com/6utt3rfly/jse-eval/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/6utt3rfly/jse-eval/actions?query=workflow%3ACI)
 <!-- [![Minzipped size](https://badgen.net/bundlephobia/minzip/jse-eval)](https://bundlephobia.com/result?p=jse-eval) -->
 

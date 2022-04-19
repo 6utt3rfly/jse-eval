@@ -231,11 +231,14 @@ tape('sync', (t) => {
 
   [...fixtures, ...syncFixtures].forEach((o) => {
     const ctx = cloneDeep(o.context || context);
-    const val = JseEval.compile(o.expr)(ctx);
+    const ast = JseEval.jsep(o.expr);
+    const val = JseEval.evaluate(ast, ctx);
     const compare = t[typeof o.expected === 'object' ? 'deepEqual' : 'equal'];
     compare(val, o.expected, `${o.expr} (${val}) === ${o.expected}`);
     if (o.expObj) {
       t.deepEqual(ctx, o.expObj, `${o.expr} (${JSON.stringify(ctx)}) === ${JSON.stringify(o.expObj)}`);
+    } else {
+      compare(ast._value, o.expected, `${o.expr} (node._value ${val}) === ${o.expected}`);
     }
   });
 

@@ -211,7 +211,10 @@ export default class ExpressionEval {
     if (!evaluator) {
       throw new Error(`unknown node type: ${JSON.stringify(node, null, 2)}`);
     }
-    return this.evalSyncAsync(evaluator.bind(this)(node), cb);
+    return this.evalSyncAsync(evaluator.bind(this)(node), (v) => {
+      (node as any)._value = v;
+      return cb(v);
+    });
   }
 
   /*
