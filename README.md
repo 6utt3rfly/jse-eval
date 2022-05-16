@@ -84,6 +84,7 @@ The result of the parse is an AST (abstract syntax tree), like:
 ```
 
 ### Evaluation
+Evaluation executes the AST using the given context (`eval(ast, context)`. By default, the context is empty.
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
@@ -92,6 +93,26 @@ const value = eval(ast, {a: 2, b: 2, c: 5}); // 2.4
 
 // alternatively:
 const value = await evalAsync(ast, {a: 2, b: 2, c: 5}); // 2.4
+```
+
+Since the default context is empty, it prevents using built-in JS functions.
+To allow those functions, they can be added to the `context` argument passed into the `eval` method:
+```javascript
+const context = {
+  Date,
+  Array,
+  Object,
+  encodeURI,
+  decodeURI,
+  isFinite,
+  isNaN,
+  JSON,
+  Math,
+  parseFloat,
+  parseInt,
+  RegExp,
+  // ...myCustomPropertiesAndFunctions,
+};
 ```
 
 ### Compilation
@@ -137,7 +158,7 @@ const { jsep } = require('jse-eval');
 jsep.plugins.register(
   require('@jsep-plugin/arrow'),
   require('@jsep-plugin/assignment'),
-  ...
+  // ...
 );
 ```
 
@@ -151,6 +172,7 @@ precedence (if provided), and the function to evaluate the operator
 for each node type. This evaluator will be called with the ExpressionEval instance bound to it.
 The evaluator is responsible for handling both sync and async, as needed, but can use the `this.isAsync`
 or `this.evalSyncAsync()` to help.
+  - *to prevent unsafe code execution, redefine `CallExpression` and `ArrowFunctionExpression` to throw an error*
   - If the node type is unknown, jse-eval will check for a `default` node type handler before
   throwing an error for an unknown node type. If any other behavior is desired, this can be overridden
   by providing a new `default` evaluator.
@@ -194,7 +216,7 @@ console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
 This project will try to stay current with all JSEP's node types::
 - `ArrayExpression`
 - `LogicalExpression`/`BinaryExpression`
-- `CallExpression`
+- `CallExpression` *potentially unsafe*
 - `ConditionalExpression`
 - `Compound` *Compound support will evaluate each expression and return the result of the final one*
 - `Identifier`
@@ -204,7 +226,7 @@ This project will try to stay current with all JSEP's node types::
 - `UnaryExpression`
 
 As well as the optional plugin node types:
-- `ArrowFunctionExpression`
+- `ArrowFunctionExpression` *potentially unsafe*
 - `AssignmentExpression`/`UpdateExpression`
 - `AwaitExpression`
 - `NewExpression`
@@ -220,7 +242,7 @@ related packages available, including:
 - [eval-estree-expression](https://github.com/jonschlinkert/eval-estree-expression)
 - [es-tree-walker](https://github.com/Rich-Harris/estree-walker)
 - [acorn](https://github.com/acornjs/acorn)
-- [astree](https://github.com/davidbonnet/astring)
+- [astring](https://github.com/davidbonnet/astring)
 
 ## Security
 
