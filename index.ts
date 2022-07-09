@@ -17,7 +17,7 @@ declare type operand = any;
 declare type unaryCallback = (a: operand) => operand;
 declare type binaryCallback = (a: operand, b: operand) => operand;
 declare type assignCallback = (obj: Record<string, operand>, key: string, val: operand) => operand;
-declare type evaluatorCallback = (node: AnyExpression, context: Context) => unknown;
+declare type evaluatorCallback = (this: ExpressionEval, node: AnyExpression, context: Context) => unknown;
 
 type AnyExpression = jsep.Expression;
 
@@ -197,8 +197,8 @@ export default class ExpressionEval {
   }
 
 
-  protected context?: Context;
-  protected isAsync?: boolean;
+  context?: Context;
+  isAsync?: boolean;
 
   constructor(context?: Context, isAsync?: boolean) {
     this.context = context;
@@ -233,7 +233,7 @@ export default class ExpressionEval {
    * `promisesOrResults = expressions.map(v => this.eval(v))`
    *   could result in an array of results (sync) or promises (async)
    */
-  private evalSyncAsync(val: unknown, cb: (unknown) => void) {
+  evalSyncAsync(val: unknown, cb: (unknown) => unknown): Promise<unknown> | unknown {
     if (this.isAsync) {
       return Promise.resolve(val).then(cb);
     }
