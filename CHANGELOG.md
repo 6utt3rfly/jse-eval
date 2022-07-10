@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/6utt3rfly/jse-eval/compare/v1.5.0...v1.5.1) (2022-07-10)
+
+
+### Bug Fixes
+
+* update evaluatorCallback types (this, and access to class properties) ([#64](https://github.com/6utt3rfly/jse-eval/issues/64)) ([49a857f](https://github.com/6utt3rfly/jse-eval/commit/49a857f886e368d4c31ec2159ecd07310309d84a)), closes [#63](https://github.com/6utt3rfly/jse-eval/issues/63)
+
 # [1.5.0](https://github.com/6utt3rfly/jse-eval/compare/v1.4.1...v1.5.0) (2022-04-19)
 
 
