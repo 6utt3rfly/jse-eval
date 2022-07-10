@@ -219,6 +219,7 @@ JseEval.addBinaryOp('~', 1, (a, b) => a * b);
 JseEval.addBinaryOp('**', 11, true, (a, b) => a ** b);
 
 JseEval.addEvaluator('TestNodeType', function(node) { return node.test + this.context.string });
+JseEval.addEvaluator('TestNodeType2', function(node, context) { return node.test + context.string });
 
 tape('sync', (t) => {
   const syncFixtures = [
@@ -244,6 +245,7 @@ tape('sync', (t) => {
 
   const val = JseEval.evaluate.bind(null, { type: 'TestNodeType', test: 'testing ' })(context);
   t.equal(val, 'testing string');
+  t.equal(JseEval.evaluate.bind(null, { type: 'TestNodeType2', test: 'testing ' })(context), 'testing string');
 
   t.end();
 });
@@ -273,6 +275,7 @@ tape('async', async (t) => {
 
   const val = await JseEval.evalAsync.bind(null, { type: 'TestNodeType', test: 'testing ' })(context);
   t.equal(val, 'testing string');
+  t.equal(JseEval.evaluate.bind(null, { type: 'TestNodeType2', test: 'testing ' })(context), 'testing string');
 
   t.end();
 });

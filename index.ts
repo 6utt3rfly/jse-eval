@@ -17,7 +17,7 @@ export declare type operand = any;
 export declare type unaryCallback = (a: operand) => operand;
 export declare type binaryCallback = (a: operand, b: operand) => operand;
 export declare type assignCallback = (obj: Record<string, operand>, key: string, val: operand) => operand;
-export declare type evaluatorCallback<T extends AnyExpression> = (this: ExpressionEval, node: T) => unknown;
+export declare type evaluatorCallback<T extends AnyExpression> = (this: ExpressionEval, node: T, context?: Context) => unknown;
 
 export type AnyExpression = jsep.Expression;
 
@@ -211,7 +211,7 @@ export default class ExpressionEval {
     if (!evaluator) {
       throw new Error(`unknown node type: ${JSON.stringify(node, null, 2)}`);
     }
-    return this.evalSyncAsync(evaluator.bind(this)(node), (v) => {
+    return this.evalSyncAsync(evaluator.bind(this)(node, this.context), (v) => {
       (node as any)._value = v;
       return cb(v);
     });
