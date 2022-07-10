@@ -198,6 +198,13 @@ expr.addEvaluator('TestNodeType', function(node) {
 });
 console.log(expr.eval({ type: 'TestNodeType', test: 'testing ' }, { string: 'jse-eval' })); // 'testing jse-eval'
 
+// override default implementation:
+expr.addEvaluator('Identifier', function myIdentifier(node: Identifier) {
+  return context?.[node.name];
+});
+console.log(expr.eval({ type: 'Identifier', name: 'x' }, { x: 'jse-eval' })); // 'jse-eval'
+
+
 const myPlugin = {
   name: 'Exponentiation',
   init(jsep) {
