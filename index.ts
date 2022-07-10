@@ -12,16 +12,16 @@ import jsep from 'jsep';
  * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
  */
 
-declare type Context = Record<string, unknown>;
-declare type operand = any;
-declare type unaryCallback = (a: operand) => operand;
-declare type binaryCallback = (a: operand, b: operand) => operand;
-declare type assignCallback = (obj: Record<string, operand>, key: string, val: operand) => operand;
-declare type evaluatorCallback = (node: AnyExpression, context: Context) => unknown;
+export declare type Context = Record<string, unknown>;
+export declare type operand = any;
+export declare type unaryCallback = (a: operand) => operand;
+export declare type binaryCallback = (a: operand, b: operand) => operand;
+export declare type assignCallback = (obj: Record<string, operand>, key: string, val: operand) => operand;
+export declare type evaluatorCallback<T extends AnyExpression> = (this: ExpressionEval, node: T, context?: Context) => unknown;
 
-type AnyExpression = jsep.Expression;
+export type AnyExpression = jsep.Expression;
 
-type JseEvalPlugin = Partial<jsep.IPlugin> & {
+export type JseEvalPlugin = Partial<jsep.IPlugin> & {
   initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
 }
 
@@ -30,7 +30,7 @@ export default class ExpressionEval {
   static parse = jsep;
   static evaluate = ExpressionEval.eval;
 
-  static evaluators: Record<string, evaluatorCallback> = {
+  static evaluators: Record<string, evaluatorCallback<AnyExpression>> = {
     'ArrayExpression': ExpressionEval.prototype.evalArrayExpression,
     'LogicalExpression': ExpressionEval.prototype.evalBinaryExpression,
     'BinaryExpression': ExpressionEval.prototype.evalBinaryExpression,
@@ -157,7 +157,7 @@ export default class ExpressionEval {
   }
 
   // inject custom node evaluators (and override existing ones)
-  static addEvaluator(nodeType: string, evaluator: evaluatorCallback): void {
+  static addEvaluator<T extends AnyExpression>(nodeType: string, evaluator: evaluatorCallback<T>): void {
     ExpressionEval.evaluators[nodeType] = evaluator;
   }
 
@@ -197,8 +197,8 @@ export default class ExpressionEval {
   }
 
 
-  protected context?: Context;
-  protected isAsync?: boolean;
+  context?: Context;
+  isAsync?: boolean;
 
   constructor(context?: Context, isAsync?: boolean) {
     this.context = context;
@@ -211,7 +211,7 @@ export default class ExpressionEval {
     if (!evaluator) {
       throw new Error(`unknown node type: ${JSON.stringify(node, null, 2)}`);
     }
-    return this.evalSyncAsync(evaluator.bind(this)(node), (v) => {
+    return this.evalSyncAsync(evaluator.bind(this)(node, this.context), (v) => {
       (node as any)._value = v;
       return cb(v);
     });
@@ -233,7 +233,7 @@ export default class ExpressionEval {
    * `promisesOrResults = expressions.map(v => this.eval(v))`
    *   could result in an array of results (sync) or promises (async)
    */
-  private evalSyncAsync(val: unknown, cb: (unknown) => void) {
+  evalSyncAsync(val: unknown, cb: (unknown) => unknown): Promise<unknown> | unknown {
     if (this.isAsync) {
       return Promise.resolve(val).then(cb);
     }
