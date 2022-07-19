@@ -1,3 +1,7 @@
+## [1.5.1+0.0.1] (2022-07-18)
+
+Forked from [jse-eval](https://github.com/6utt3rfly/jse-eval]) v1.5.1. Many thanks to @Shelly (6utt3rfly) and @donmccurdy
+
 ## [1.5.1](https://github.com/6utt3rfly/jse-eval/compare/v1.5.0...v1.5.1) (2022-07-10)
 
 

@@ -6,10 +6,12 @@
 <!-- [![Minzipped size](https://badgen.net/bundlephobia/minzip/jse-eval)](https://bundlephobia.com/result?p=jse-eval) -->
 
 ## Credits
-Heavily based on [expression-eval](https://github.com/donmccurdy/expression-eval) and [jsep](https://github.com/EricSmekens/jsep),
+Heavily based on [jse-eval](https://github.com/6utt3rfly), [expression-eval](https://github.com/donmccurdy/expression-eval) and [jsep](https://github.com/EricSmekens/jsep),
 with thanks to their awesome work.
 
-_Forked from [expression-eval](https://github.com/donmccurdy/expression-eval]) v5.0.0. Many thanks to @donmccurdy for the initial package_
+_Forked from [jse-eval](https://github.com/6utt3rfly) v1.5.1. Many thanks to @Shelly for the initial package_
+
+_[jse-eval](https://github.com/6utt3rfly) was forked from [expression-eval](https://github.com/donmccurdy/expression-eval]) v5.0.0. Many thanks to @donmccurdy for the initial package_
 
 **JavaScript expression parsing and evaluation.**
 

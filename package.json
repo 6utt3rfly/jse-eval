@@ -1,6 +1,6 @@
 {
-  "name": "jse-eval",
-  "version": "1.5.1",
+  "name": "@zvenigora/jse-eval",
+  "version": "1.5.1+0.0.1",
   "description": "JavaScript expression parsing and evaluation.",
   "source": "index.ts",
   "type": "module",
@@ -14,7 +14,7 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/6utt3rfly/jse-eval.git"
+    "url": "https://github.com/Zvenigora/jse-eval.git"
   },
   "scripts": {
     "dev": "microbundle watch",
@@ -46,8 +46,9 @@
     "js-eval",
     "expression-eval"
   ],
-  "author": "Shelly (https://github.com/6utt3rfly)",
+  "author": "Zvenigora (https://github.com/Zvenigora)",
   "contributors": [
+    "Shelly (https://github.com/6utt3rfly)",
     "Don McCurdy <dm@donmccurdy.com>"
   ],
   "license": "MIT",
