@@ -1,10 +1,10 @@
-## [1.5.3.003] (https://github.com/zvenigora/jse-eval/compare/v1.5.2.002...v1.5.3.003) (2022-07-18)
-
-* Fix: corrected changelog.md
+## [1.5.1.002] (https://github.com/zvenigora/jse-eval/compare/v1.5.1.002...v1.5.1.003) (2022-07-18)
 
 * Feature: added support for case-insensitive evaluation via options.
 
-## [1.5.2.002] (https://github.com/zvenigora/jse-eval/compare/v1.5.1...v1.5.2.002) (2022-07-18)
+* Fix: corrected changelog.md
+
+## [1.5.1.001] (https://github.com/zvenigora/jse-eval/compare/v1.5.1...v1.5.1.001) (2022-07-18)
 
 Forked from [jse-eval](https://github.com/6utt3rfly/jse-eval]) v1.5.1. Many thanks to @Shelly (6utt3rfly) and @donmccurdy
 
