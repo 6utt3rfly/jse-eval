@@ -13,6 +13,7 @@ import jsep from 'jsep';
  */
 
 export declare type Context = Record<string, unknown>;
+export declare type ContextOrObject = Record<string, unknown> | object;
 export declare type operand = any;
 export declare type unaryCallback = (a: operand) => operand;
 export declare type binaryCallback = (a: operand, b: operand) => operand;
@@ -24,6 +25,21 @@ export type AnyExpression = jsep.Expression;
 export type JseEvalPlugin = Partial<jsep.IPlugin> & {
   initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
 }
+
+export type EvalOptions = {
+  caseSensitive?: boolean;
+}
+
+const defaultOptions: EvalOptions = {
+  caseSensitive: true
+}
+
+const literals: Map<string, unknown> = new Map([
+  ['undefined', undefined],
+  ['null', null],
+  ['true', true],
+  ['false', false],
+]);
 
 export default class ExpressionEval {
   static jsep = jsep;
@@ -173,11 +189,11 @@ export default class ExpressionEval {
   }
 
   // main evaluator method
-  static eval(ast: jsep.Expression, context?: Context): unknown {
-    return (new ExpressionEval(context)).eval(ast);
+  static eval(ast: jsep.Expression, context?: Context, options?: EvalOptions): unknown {
+    return (new ExpressionEval(context, undefined, options)).eval(ast);
   }
-  static async evalAsync(ast: jsep.Expression, context?: Context): Promise<unknown> {
-    return (new ExpressionEval(context, true)).eval(ast);
+  static async evalAsync(ast: jsep.Expression, context?: Context, options?: EvalOptions): Promise<unknown> {
+    return (new ExpressionEval(context, true, options)).eval(ast);
   }
 
   // compile an expression and return an evaluator
@@ -199,10 +215,16 @@ export default class ExpressionEval {
 
   context?: Context;
   isAsync?: boolean;
+  options?: EvalOptions;
 
-  constructor(context?: Context, isAsync?: boolean) {
+  get caseSensitive() {
+    return !!(this.options && this.options.caseSensitive);
+  }
+
+  constructor(context?: Context, isAsync?: boolean, options?: EvalOptions) {
     this.context = context;
     this.isAsync = isAsync;
+    this.options = options || defaultOptions;
   }
 
   public eval(node: unknown, cb = v => v): unknown {
@@ -305,7 +327,19 @@ export default class ExpressionEval {
   }
 
   private evalIdentifier(node: jsep.Identifier) {
-    return this.context[node.name];
+    if (this.caseSensitive) {
+      return this.context[node.name];
+    } else if (node.name.localeCompare('this', 'en', { sensitivity: 'base' }) === 0) {
+      return this.evalThisExpression();
+    } else {
+      const literal = ExpressionEval.getLiteralPair(literals, node.name, this.caseSensitive);
+      if (literal) {
+        const [, value] = literal;
+        return value;
+      }
+      const value = ExpressionEval.getValue(this.context, node.name, this.caseSensitive);
+      return value;
+    }
   }
 
   private static evalLiteral(node: jsep.Literal) {
@@ -326,7 +360,9 @@ export default class ExpressionEval {
           if (/^__proto__|prototype|constructor$/.test(key)) {
             throw Error(`Access to member "${key}" disallowed.`);
           }
-          return [object, (node.optional ? (object || {}) : object)[key], key];
+          const obj = (node.optional ? (object || {}) : object);
+          const value = ExpressionEval.getValue(obj, key, this.caseSensitive);
+          return [object, value, key];
         })
     );
   }
@@ -464,10 +500,14 @@ export default class ExpressionEval {
     if (node.type === 'MemberExpression') {
       return this.evalSyncAsync(
         this.evaluateMember(<jsep.MemberExpression>node),
-        ([obj, , key]) => [obj, key]
+        ([obj, , key]) => {
+          const [newKey, ] = ExpressionEval.getKeyValuePair(obj, key, this.caseSensitive);
+          return [obj, newKey];
+        }
       );
     } else if (node.type === 'Identifier') {
-      return [this.context, node.name];
+      const [key, ] = ExpressionEval.getKeyValuePair(this.context, node.name as string | number, this.caseSensitive);
+      return [this.context, key];
     } else if (node.type === 'ConditionalExpression') {
       return this.eval(node.test, test => this
         .getContextAndKey((test
@@ -491,7 +531,7 @@ export default class ExpressionEval {
     const arr = node.properties.map((prop: Property | SpreadElement) => {
       if (prop.type === 'SpreadElement') {
         // always synchronous in this case
-        Object.assign(obj, ExpressionEval.eval(prop.argument, this.context));
+        Object.assign(obj, ExpressionEval.eval(prop.argument, this.context, this.options));
       } else if (prop.type === 'Property') {
         return this.evalSyncAsync(
           prop.key.type === 'Identifier'
@@ -576,6 +616,52 @@ export default class ExpressionEval {
         || ((callee as jsep.MemberExpression).property
           && ((callee as jsep.MemberExpression).property as jsep.Identifier).name));
   }
+
+  private static getValue(obj: ContextOrObject, name: string, caseSensitive: boolean): unknown {
+
+    const [, value] = ExpressionEval.getKeyValuePair(obj, name, caseSensitive);
+
+    return value;
+  }
+
+  private static getKeyValuePair(obj: ContextOrObject, name: string | number, 
+    caseSensitive: boolean): [string | number, unknown] {
+
+    if (caseSensitive || typeof name !== 'string') {
+      const value = obj[name];
+      return [name, value];
+    }
+
+    if (typeof name === 'string') {
+      let currentObj = obj;
+      do {
+        const keys: string[] = Object.getOwnPropertyNames(currentObj);
+        if (Array.isArray(keys)) {
+          const key = keys.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
+          if (key) {
+            const value = obj[key];
+            return [key, value];
+          }
+        }
+      } while ((currentObj = Object.getPrototypeOf(currentObj)));
+    }
+
+    return [name, undefined];
+  }
+
+  private static getLiteralPair(map: Map<string, unknown>, name: string, caseSensitive: boolean): [string, unknown] {
+    if (caseSensitive) {
+      return map[name];
+    } else {
+      for (const [key, value] of map) {
+        const found = key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0;
+        if (found) {
+          return [key, value];
+        }
+      }
+    }
+  }
+
 }
 
 /** NOTE: exporting named + default.

@@ -221,6 +221,19 @@ expr.registerPlugin(myPlugin);
 console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
 ```
 
+### Case-insensitive evaluation
+
+While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation use `options`. 
+
+```javascript
+import { parse, evaluate } from 'jse-eval';
+const options = {caseSensitive: false};
+const ast = parse('A + B / C');
+const value = eval(ast, {a: 2, b: 2, c: 5}, options); // 2.4
+```
+
+> **_NOTE:_** Options support has not implemented for `compile` function.
+
 ### Node Types Supported:
 This project will try to stay current with all JSEP's node types::
 - `ArrayExpression`
