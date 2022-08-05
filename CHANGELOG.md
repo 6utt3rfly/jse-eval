@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/Zvenigora/jse-eval/compare/v1.6.0...v1.7.0) (2022-08-05)
+
+
+### Features
+
+* added default options ([697cba9](https://github.com/Zvenigora/jse-eval/commit/697cba97056749fe0098f5c42e4f885970d7eee3))
+
 # [1.6.0](https://github.com/Zvenigora/jse-eval/compare/v1.5.2...v1.6.0) (2022-08-05)
 
 
