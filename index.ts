@@ -30,10 +30,6 @@ export type EvalOptions = {
   caseSensitive?: boolean;
 }
 
-const defaultOptions: EvalOptions = {
-  caseSensitive: true
-}
-
 const literals: Map<string, unknown> = new Map([
   ['undefined', undefined],
   ['null', null],
@@ -142,6 +138,10 @@ export default class ExpressionEval {
     '|=': function(obj, key, val) { return obj[key] |= val; },
   };
 
+  static defaultOptions: EvalOptions = {
+    caseSensitive: true
+  }
+
   // inject Custom Unary Operators (and override existing ones)
   static addUnaryOp(operator: string, _function: unaryCallback): void {
     jsep.addUnaryOp(operator);
@@ -188,6 +188,11 @@ export default class ExpressionEval {
     });
   }
 
+  // inject default Options
+  static addOptions(options: EvalOptions): void {
+    ExpressionEval.defaultOptions = options;
+  }
+
   // main evaluator method
   static eval(ast: jsep.Expression, context?: Context, options?: EvalOptions): unknown {
     return (new ExpressionEval(context, undefined, options)).eval(ast);
@@ -224,7 +229,7 @@ export default class ExpressionEval {
   constructor(context?: Context, isAsync?: boolean, options?: EvalOptions) {
     this.context = context;
     this.isAsync = isAsync;
-    this.options = options || defaultOptions;
+    this.options = options || ExpressionEval.defaultOptions;
   }
 
   public eval(node: unknown, cb = v => v): unknown {
@@ -677,6 +682,7 @@ export const addUnaryOp = ExpressionEval.addUnaryOp;
 export const addBinaryOp = ExpressionEval.addBinaryOp;
 export const addEvaluator = ExpressionEval.addEvaluator;
 export const registerPlugin = ExpressionEval.registerPlugin;
+export const addOptions = ExpressionEval.addOptions;
 export const evaluate = ExpressionEval.eval;
 export const evalAsync = ExpressionEval.evalAsync;
 export const compile = ExpressionEval.compile;

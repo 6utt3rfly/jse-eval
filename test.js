@@ -172,6 +172,9 @@ const options = {
   caseSensitive: false
 }
 
+
+
+
 const caseInsensitiveFixtures = [
 
   {expr: 'True', expected: true},
@@ -419,8 +422,7 @@ tape('errors', async (t) => {
   }
 });
 
-tape('caseInsensitive', (t) => {
-
+tape('eval - caseInsensitive', (t) => {
   [...caseInsensitiveFixtures].forEach((o) => {
     const ctx = cloneDeep(o.context || context);
     const ast = JseEval.jsep(o.expr);
@@ -436,3 +438,22 @@ tape('caseInsensitive', (t) => {
 
   t.end();
 });
+
+tape('compile - caseInsensitive', (t) => {
+  [...caseInsensitiveFixtures].forEach((o) => {
+    const ctx = cloneDeep(o.context || context);
+    JseEval.addOptions(options);
+    const fn = JseEval.compile(o.expr);
+    const val = fn(ctx);
+    const compare = t[typeof o.expected === 'object' ? 'deepEqual' : 'equal'];
+    compare(val, o.expected, `${o.expr} (${val}) === ${o.expected}`);
+    if (o.expObj) {
+      t.deepEqual(ctx, o.expObj, `${o.expr} (${JSON.stringify(ctx)}) === ${JSON.stringify(o.expObj)}`);
+    } else {
+      compare(val, o.expected, `${o.expr} (${val}) === ${o.expected}`);
+    }
+  });
+
+  t.end();
+});
+

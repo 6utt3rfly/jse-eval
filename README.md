@@ -223,16 +223,30 @@ console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
 
 ### Case-insensitive evaluation
 
-While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation use `options`. 
+To change default behavior of evaluator, use `options`. Options may be provided as argument to function call of 'eval'. In another way options may be added as defualt to evaluator.
+
+While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation, set caseSensitive to false. 
+
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
+
 const options = {caseSensitive: false};
 const ast = parse('A + B / C');
+
+// Pass options as argument
 const value = eval(ast, {a: 2, b: 2, c: 5}, options); // 2.4
 ```
 
-> **_NOTE:_** Options support has not implemented for `compile` function.
+```javascript
+import { compile } from 'jse-eval';
+
+// Add options to evaluator
+const options = {caseSensitive: false};
+JseEval.addOptions(options);
+const fn = JseEval.compile('Foo.BAR + 10', options);
+const value = fn({foo: {bar: 'baz'}}); // 'baz10'
+```
 
 ### Node Types Supported:
 This project will try to stay current with all JSEP's node types::
