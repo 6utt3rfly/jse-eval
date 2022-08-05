@@ -1,3 +1,15 @@
+# [1.6.0](https://github.com/Zvenigora/jse-eval/compare/v1.5.2...v1.6.0) (2022-08-05)
+
+
+### Bug Fixes
+
+* updated version ([567238d](https://github.com/Zvenigora/jse-eval/commit/567238df43f2ccb308aed873ad24c59af3844003))
+
+
+### Features
+
+* add options for case-insensitive evaluation ([2b33b18](https://github.com/Zvenigora/jse-eval/commit/2b33b180373b96c9f361e2864746f9dcf455f86e))
+
 ## [1.5.1.002] (https://github.com/zvenigora/jse-eval/compare/v1.5.1.002...v1.5.1.003) (2022-07-18)
 
 * Feature: added support for case-insensitive evaluation via options.
