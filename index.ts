@@ -28,6 +28,8 @@ export type JseEvalPlugin = Partial<jsep.IPlugin> & {
 
 export type EvalOptions = {
   caseSensitive?: boolean;
+  blockList?: string[];
+  allowList?: string[];
 }
 
 const literals: Map<string, unknown> = new Map([
@@ -337,12 +339,12 @@ export default class ExpressionEval {
     } else if (node.name.localeCompare('this', 'en', { sensitivity: 'base' }) === 0) {
       return this.evalThisExpression();
     } else {
-      const literal = ExpressionEval.getLiteralPair(literals, node.name, this.caseSensitive);
+      const literal = ExpressionEval.getLiteralPair(literals, node.name, this.options);
       if (literal) {
         const [, value] = literal;
         return value;
       }
-      const value = ExpressionEval.getValue(this.context, node.name, this.caseSensitive);
+      const value = ExpressionEval.getValue(this.context, node.name, this.options);
       return value;
     }
   }
@@ -366,7 +368,7 @@ export default class ExpressionEval {
             throw Error(`Access to member "${key}" disallowed.`);
           }
           const obj = (node.optional ? (object || {}) : object);
-          const value = ExpressionEval.getValue(obj, key, this.caseSensitive);
+          const value = ExpressionEval.getValue(obj, key, this.options);
           return [object, value, key];
         })
     );
@@ -506,12 +508,12 @@ export default class ExpressionEval {
       return this.evalSyncAsync(
         this.evaluateMember(<jsep.MemberExpression>node),
         ([obj, , key]) => {
-          const [newKey, ] = ExpressionEval.getKeyValuePair(obj, key, this.caseSensitive);
+          const [newKey, ] = ExpressionEval.getKeyValuePair(obj, key, this.options);
           return [obj, newKey];
         }
       );
     } else if (node.type === 'Identifier') {
-      const [key, ] = ExpressionEval.getKeyValuePair(this.context, node.name as string | number, this.caseSensitive);
+      const [key, ] = ExpressionEval.getKeyValuePair(this.context, node.name as string | number, this.options);
       return [this.context, key];
     } else if (node.type === 'ConditionalExpression') {
       return this.eval(node.test, test => this
@@ -622,17 +624,20 @@ export default class ExpressionEval {
           && ((callee as jsep.MemberExpression).property as jsep.Identifier).name));
   }
 
-  private static getValue(obj: ContextOrObject, name: string, caseSensitive: boolean): unknown {
+  private static getValue(obj: ContextOrObject, name: string, options: EvalOptions): unknown {
 
-    const [, value] = ExpressionEval.getKeyValuePair(obj, name, caseSensitive);
+    const [, value] = ExpressionEval.getKeyValuePair(obj, name, options);
 
     return value;
   }
 
   private static getKeyValuePair(obj: ContextOrObject, name: string | number, 
-    caseSensitive: boolean): [string | number, unknown] {
+    options: EvalOptions): [string | number, unknown] {
 
-    if (caseSensitive || typeof name !== 'string') {
+    ExpressionEval.blockListTest(obj, name, options);
+    ExpressionEval.allowListTest(obj, name, options);
+
+    if (options.caseSensitive || typeof name !== 'string') {
       const value = obj[name];
       return [name, value];
     }
@@ -654,8 +659,12 @@ export default class ExpressionEval {
     return [name, undefined];
   }
 
-  private static getLiteralPair(map: Map<string, unknown>, name: string, caseSensitive: boolean): [string, unknown] {
-    if (caseSensitive) {
+  private static getLiteralPair(map: Map<string, unknown>, name: string, options: EvalOptions): [string, unknown] {
+
+    ExpressionEval.blockListTest(map, name, options);
+    ExpressionEval.allowListTest(map, name, options);
+  
+    if (options.caseSensitive) {
       return map[name];
     } else {
       for (const [key, value] of map) {
@@ -667,6 +676,33 @@ export default class ExpressionEval {
     }
   }
 
+  private static blockListTest(obj: ContextOrObject, name: string | number, 
+    options: EvalOptions): void {
+    if (options.blockList && typeof name === 'string') {
+
+      const find = options.caseSensitive 
+        ? options.blockList.find(key => key === name)
+        : options.blockList.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
+
+      if (find) {
+        throw Error(`Access to member "${name}" from blockList disallowed.`);        
+      }
+    }
+  }
+
+  private static allowListTest(obj: ContextOrObject, name: string | number, 
+    options: EvalOptions): void {
+    if (options.allowList && typeof name === 'string') {
+
+      const find = options.caseSensitive 
+        ? options.allowList.find(key => key === name)
+        : options.allowList.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
+
+      if (!find) {
+        throw Error(`Access to member "${name}" not in allowList disallowed.`);        
+      }
+    }
+  }
 }
 
 /** NOTE: exporting named + default.

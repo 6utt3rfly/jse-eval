@@ -221,33 +221,6 @@ expr.registerPlugin(myPlugin);
 console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
 ```
 
-### Case-insensitive evaluation
-
-To change default behavior of evaluator, use `options`. Options may be provided as argument to function call of 'eval'. In another way options may be added as defualt to evaluator.
-
-While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation, set caseSensitive to false. 
-
-
-```javascript
-import { parse, evaluate } from 'jse-eval';
-
-const options = {caseSensitive: false};
-const ast = parse('A + B / C');
-
-// Pass options as argument
-const value = eval(ast, {a: 2, b: 2, c: 5}, options); // 2.4
-```
-
-```javascript
-import { compile } from 'jse-eval';
-
-// Add options to evaluator
-const options = {caseSensitive: false};
-JseEval.addOptions(options);
-const fn = JseEval.compile('Foo.BAR + 10', options);
-const value = fn({foo: {bar: 'baz'}}); // 'baz10'
-```
-
 ### Node Types Supported:
 This project will try to stay current with all JSEP's node types::
 - `ArrayExpression`
@@ -269,6 +242,63 @@ As well as the optional plugin node types:
 - `ObjectExpression`
 - `SpreadElement`
 - `TaggedTemplateExpression`/`TemplateLiteral`
+
+
+## Options
+To change default behavior of evaluator, use `options`. Options may be provided as argument to function call of `eval`. In another way options may be added as default to `JseEval`.
+### Case-insensitive evaluation
+
+While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation, set caseSensitive to false. 
+
+```javascript
+import { parse, evaluate } from 'jse-eval';
+
+const options = {caseSensitive: false};
+const ast = parse('A + B / C');
+
+// Pass options as argument
+const value = eval(ast, {a: 2, b: 2, c: 5}, options); // 2.4
+```
+
+```javascript
+import { compile } from 'jse-eval';
+
+// Add options to evaluator
+const options = {caseSensitive: false};
+JseEval.addOptions(options);
+const fn = JseEval.compile('Foo.BAR + 10', options);
+const value = fn({foo: {bar: 'baz'}}); // 'baz10'
+```
+
+### Blocklist
+
+`blockList` prevents permits execution of functions or evaluation of variables except those explicetelly specified. For example, blocklist may restrict to call non-secure JavaScript `eval` function.
+
+```javascript
+import { parse, evaluate } from 'jse-eval';
+
+const options = {blockList: ['badName', 'eval']};
+const ast = parse('eval("1+2")');
+
+const value = eval(ast, {}, options); // error: Access to member "eval" from blockList disallowed 
+```
+
+### Allowlist
+
+`allowList` explicetelly permits execution of functions or evaluation of variables. For example, allowlist may restrict to call non-secure JavaScript  `eval` function.
+
+```javascript
+import { parse, evaluate } from 'jse-eval';
+
+const options = {allowList: ['goodName', 'func']};
+const ast = parse('eval("1+2")');
+
+const value = eval(ast, {}, options); // error: Access to member "eval" not in allowList disallowed 
+```
+
+
+
+
 
 ## Related Packages
 Depending on your specific use-case, there are other
