@@ -19,7 +19,7 @@
   "scripts": {
     "dev": "microbundle watch",
     "build": "microbundle",
-    "test": "node test.js | tap-spec && npm run --prefix test-cjs test",
+    "test": "node tests/test.js | tap-spec && npm run --prefix test-cjs test",
     "lint": "eslint *.ts",
     "prepare": "husky install",
     "ci": "npm run lint && npm run build && npm test",
