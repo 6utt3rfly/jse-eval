@@ -45,3 +45,5 @@ export * from './errors.test.js';
 export * from './case-insensitive.test.js';
 export * from './block-list.test.js';
 export * from './allow-list.test.js';
+export * from './explicit-this.test.js';
+export * from './function-bindings.test.js';

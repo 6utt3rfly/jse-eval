@@ -246,6 +246,7 @@ As well as the optional plugin node types:
 
 ## Options
 To change default behavior of evaluator, use `options`. Options may be provided as argument to function call of `eval`. In another way options may be added as default to `JseEval`.
+
 ### Case-insensitive evaluation
 
 While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation, set caseSensitive to false. 
@@ -296,9 +297,34 @@ const ast = parse('eval("1+2")');
 const value = eval(ast, {}, options); // error: Access to member "eval" not in allowList disallowed 
 ```
 
+### Function Bindings
 
+To give the reference to `this` of the `context` or / and provide extra arguments, use `functionBindings`. The feature utilises the JavaScript `Function.prototype.bind()` method.
 
+```javascript
+import { parse, evaluate } from 'jse-eval';
 
+const context = {
+  num: 3,
+  name: 'Miss Kitty',
+  action: function(args, n, t) {return this.name + ' ' + args.join(' ') + ' ' + n + ' ' + t;},
+  says: function() {return this.name + ' says meow';},
+}
+
+const bindings = {
+  action: { thisRef: context, arguments: ['says', 'meow'] },
+  says: { thisRef: context },
+}
+
+const options = { functionBindings: {...bindings} };
+
+const ast = parse('says()');
+const value = eval(ast, context, options); // Miss Kitty says meow
+
+const ast2 = parse('action(num, "times")');
+const value2 = eval(ast2, context, options); // Miss Kitty says meow 3 times
+
+```
 
 ## Related Packages
 Depending on your specific use-case, there are other

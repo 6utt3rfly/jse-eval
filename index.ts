@@ -26,10 +26,16 @@ export type JseEvalPlugin = Partial<jsep.IPlugin> & {
   initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
 }
 
+export type FunctionBindings = {
+  thisRef?: Context,
+  arguments?: [unknown]
+}
+
 export type EvalOptions = {
   caseSensitive?: boolean;
   blockList?: string[];
   allowList?: string[];
+  functionBindings?: Record<string, FunctionBindings>
 }
 
 const literals: Map<string, unknown> = new Map([
@@ -335,7 +341,8 @@ export default class ExpressionEval {
 
   private evalIdentifier(node: jsep.Identifier) {
     if (this.caseSensitive) {
-      return this.context[node.name];
+      const value = ExpressionEval.getValue(this.context, node.name, this.options);
+      return value;
     } else if (node.name.localeCompare('this', 'en', { sensitivity: 'base' }) === 0) {
       return this.evalThisExpression();
     } else {
@@ -628,7 +635,23 @@ export default class ExpressionEval {
 
     const [, value] = ExpressionEval.getKeyValuePair(obj, name, options);
 
+    const fn = ExpressionEval.getBindFunction(value, name, options);
+    if (typeof fn === 'function') {
+      return fn;
+    }
+      
     return value;
+  }
+
+  private static getBindFunction(obj: unknown, name: string, options: EvalOptions) {
+    if (typeof obj === 'function' && options?.functionBindings) {
+      const [, value] = ExpressionEval.getKeyValuePair(options.functionBindings, name, options);
+      const bindings: FunctionBindings = value;
+      if (bindings?.thisRef || bindings?.arguments) {
+        const fn = obj.bind(bindings?.thisRef, bindings?.arguments);
+        return fn;
+      }
+    }
   }
 
   private static getKeyValuePair(obj: ContextOrObject, name: string | number, 
