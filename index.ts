@@ -31,11 +31,16 @@ export type FunctionBindings = {
   arguments?: [unknown]
 }
 
+export type Scope = {
+  options?: EvalOptions;
+}
+
 export type EvalOptions = {
   caseSensitive?: boolean;
   blockList?: string[];
   allowList?: string[];
-  functionBindings?: Record<string, FunctionBindings>
+  functionBindings?: Record<string, FunctionBindings>;
+  scopes?: Record<string, Scope>;
 }
 
 const literals: Map<string, unknown> = new Map([
@@ -352,6 +357,14 @@ export default class ExpressionEval {
         return value;
       }
       const value = ExpressionEval.getValue(this.context, node.name, this.options);
+
+      if (value && this.options.scopes) {
+        const [, scope] = ExpressionEval.getScopePair(this.context, node.name, this.options);
+        if (scope) {
+          (node as any)._scope = scope;
+        }
+      }
+
       return value;
     }
   }
@@ -375,7 +388,9 @@ export default class ExpressionEval {
             throw Error(`Access to member "${key}" disallowed.`);
           }
           const obj = (node.optional ? (object || {}) : object);
-          const value = ExpressionEval.getValue(obj, key, this.options);
+          const scope: Scope = node.object._scope as Scope;
+          const options = scope ? {...this.options, ...scope.options} : this.options;
+          const value = ExpressionEval.getValue(obj, key, options);
           return [object, value, key];
         })
     );
@@ -643,13 +658,30 @@ export default class ExpressionEval {
     return value;
   }
 
-  private static getBindFunction(obj: unknown, name: string, options: EvalOptions) {
+  private static getScopePair(obj: unknown, name: string, 
+    options: EvalOptions): [string | number, Scope] {
+
+    if (typeof obj !== 'undefined' && options?.scopes) {
+      const [key, value] = ExpressionEval.getKeyValuePair(options.scopes, name, options);
+      if (value) {
+        const scope: Scope = value;
+        return [key, scope];
+      }
+    }
+    return [name, undefined];
+  }
+
+  private static getBindFunction(obj: unknown, name: string, 
+    options: EvalOptions) {
+
     if (typeof obj === 'function' && options?.functionBindings) {
       const [, value] = ExpressionEval.getKeyValuePair(options.functionBindings, name, options);
-      const bindings: FunctionBindings = value;
-      if (bindings?.thisRef || bindings?.arguments) {
-        const fn = obj.bind(bindings?.thisRef, bindings?.arguments);
-        return fn;
+      if (value) {
+        const bindings: FunctionBindings = value;
+        if (bindings?.thisRef || bindings?.arguments) {
+          const fn = obj.bind(bindings?.thisRef, bindings?.arguments);
+          return fn;
+        }
       }
     }
   }

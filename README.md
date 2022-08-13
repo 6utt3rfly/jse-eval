@@ -25,6 +25,12 @@ _[jse-eval](https://github.com/6utt3rfly) was forked from [expression-eval](http
   * [Compilation](#compilation)
 - [Extending evaluation](#extending-evaluation)
   * [Node Types Supported](#node-types-supported)
+- [Options](#options)
+  * [Case-insensitive evaluation](#case-insensitive-evaluation)
+  * [Blocklist](#blocklist)
+  * [Allowlist](#allowlist)
+  * [Function Bindings](#function-bindings)
+  * [Function Bindings with Scopes](#function-bindings-with-scopes)
 - [Related Packages](#related-packages)
 - [Security](#security)
 - [Contributing](#contributing)
@@ -245,11 +251,11 @@ As well as the optional plugin node types:
 
 
 ## Options
-To change default behavior of evaluator, use `options`. Options may be provided as argument to function call of `eval`. In another way options may be added as default to `JseEval`.
+To change the default behavior of the evaluator, use `options`. Options may be provided as an argument to the function call of `eval` or options may be added as default to `JseEval`.
 
 ### Case-insensitive evaluation
 
-While JavaScript is the case-sensitive language some target audience finds it hard to use. To provide case-insensitive evaluation, set caseSensitive to false. 
+While JavaScript is a case-sensitive language, some may find it hard to use. To provide case-insensitive evaluation, set caseSensitive to false. 
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
@@ -273,7 +279,7 @@ const value = fn({foo: {bar: 'baz'}}); // 'baz10'
 
 ### Blocklist
 
-`blockList` prevents permits execution of functions or evaluation of variables except those explicetelly specified. For example, blocklist may restrict to call non-secure JavaScript `eval` function.
+`blockList` prevents the execution of functions or the evaluation of variables, except those explictly specified. For example, blocklist may restrict the calling of the non-secure JavaScript `eval` function.
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
@@ -286,7 +292,7 @@ const value = eval(ast, {}, options); // error: Access to member "eval" from blo
 
 ### Allowlist
 
-`allowList` explicetelly permits execution of functions or evaluation of variables. For example, allowlist may restrict to call non-secure JavaScript  `eval` function.
+`allowList` explictly permits the execution of functions or the evaluation of variables. For example, allowlist may restrict the calling of the non-secure JavaScript `eval` function.
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
@@ -299,7 +305,7 @@ const value = eval(ast, {}, options); // error: Access to member "eval" not in a
 
 ### Function Bindings
 
-To give the reference to `this` of the `context` or / and provide extra arguments, use `functionBindings`. The feature utilises the JavaScript `Function.prototype.bind()` method.
+To give the reference to `this` of the `context` or / and provide additional arguments, use `functionBindings`. The feature utilises the JavaScript `Function.prototype.bind()` method.
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
@@ -323,6 +329,66 @@ const value = eval(ast, context, options); // Miss Kitty says meow
 
 const ast2 = parse('action(num, "times")');
 const value2 = eval(ast2, context, options); // Miss Kitty says meow 3 times
+
+```
+
+### Function Bindings with Scopes
+
+`Function Bindings` may be extended with `scopes`. Scopes faintly resemble namespaces and they allow to use the functions with the same name.
+
+```javascript
+import { parse, evaluate } from 'jse-eval';
+
+const catObject = {
+  type: 'Cat',
+  name: 'Miss Kitty',
+  num: 3,
+  says: function() {return this.type + ' ' + this.name + ' says meow';},
+  action: function(args, n, t) {return this.name + ' ' + args.join(' ') + ' ' + n + ' ' + t;},
+}
+
+const catFunctionBindings = {
+  says: { thisRef: catObject },
+  action: { thisRef: catObject, arguments: ['says', 'meow']
+  },
+}
+
+const dogObject = {
+  type: 'Dog',
+  name: 'Ralph',
+  num: 5,
+  says: function() {return this.type + ' ' + this.name + ' says woof';},
+  action: function(args, n, t) {return this.name + ' ' + args.join(' ') + ' ' + n + ' ' + t;},
+}
+
+const dogFunctionBindings = {
+  says: { thisRef: dogObject },
+  action: { thisRef: dogObject, arguments: ['says', 'woof'] },
+}
+
+const context = {
+  cat: catObject,
+  dog: dogObject
+}
+
+const options = {
+  scopes: {
+    cat: { options: {functionBindings: {...catFunctionBindings}} },
+    dog: { options: {functionBindings: {...dogFunctionBindings}} }
+  }
+}
+
+const ast = parse('cat.says()');
+const value = eval(ast, context, options); // Cat Miss Kitty says meow
+
+const ast2 = parse('dog.says()');
+const value2 = eval(ast2, context, options); // Dog Ralph says woof
+
+const ast3 = parse('cat.action(cat.num, "times")');
+const value3 = eval(ast3, context, options); // Miss Kitty says meow 3 times
+
+const ast4 = parse('dog.action(dog.num, "times")');
+const value4 = eval(ast4, context, options); // Ralph says woof 5 times
 
 ```
 

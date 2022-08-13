@@ -47,3 +47,4 @@ export * from './block-list.test.js';
 export * from './allow-list.test.js';
 export * from './explicit-this.test.js';
 export * from './function-bindings.test.js';
+export * from './scope-function-bindings.test.js';
