@@ -28,7 +28,7 @@ export type JseEvalPlugin = Partial<jsep.IPlugin> & {
 
 export type FunctionBindings = {
   thisRef?: Context,
-  arguments?: [unknown]
+  arguments?: unknown[]
 }
 
 export type Scope = {
