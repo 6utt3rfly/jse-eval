@@ -1,6 +1,6 @@
 {
   "name": "@zvenigora/jse-eval",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "description": "JavaScript expression parsing and evaluation.",
   "source": "index.ts",
   "type": "module",

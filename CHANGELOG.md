@@ -1,3 +1,17 @@
+# [1.8.0](https://github.com/Zvenigora/jse-eval/compare/v1.7.0...v1.8.0) (2022-09-06)
+
+
+### Bug Fixes
+
+* fixed function bindings type ([9c52ba2](https://github.com/Zvenigora/jse-eval/commit/9c52ba24c2dbc2636c9424858a6812db3add0dfe))
+
+
+### Features
+
+* add blocklist and allowlist ([3d26a16](https://github.com/Zvenigora/jse-eval/commit/3d26a16b82be7d47d3859bce956b680ff080b5fc))
+* added function bindings ([9b8da21](https://github.com/Zvenigora/jse-eval/commit/9b8da2171dda5d822cad481e443f9fd42d3bd3d4))
+* added function bindings with scopes ([1a74664](https://github.com/Zvenigora/jse-eval/commit/1a74664a76e9cf5c51421015fed38641aee8b3d6))
+
 # [1.7.0](https://github.com/Zvenigora/jse-eval/compare/v1.6.0...v1.7.0) (2022-08-05)
 
 
