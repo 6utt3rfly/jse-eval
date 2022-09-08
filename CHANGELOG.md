@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Zvenigora/jse-eval/compare/v1.8.0...v1.9.0) (2022-09-08)
+
+
+### Features
+
+* added current and global scopes ([adf61d6](https://github.com/Zvenigora/jse-eval/commit/adf61d6bdb86e1a6895615c95f0a693520c76c56))
+
 # [1.8.0](https://github.com/Zvenigora/jse-eval/compare/v1.7.0...v1.8.0) (2022-09-06)
 
 
