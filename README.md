@@ -27,8 +27,8 @@ _[jse-eval](https://github.com/6utt3rfly) was forked from [expression-eval](http
   * [Node Types Supported](#node-types-supported)
 - [Options](#options)
   * [Case-insensitive evaluation](#case-insensitive-evaluation)
-  * [Blocklist](#blocklist)
-  * [Allowlist](#allowlist)
+  * [BlockList](#blocklist)
+  * [AllowList](#allowlist)
   * [Function Bindings](#function-bindings)
   * [Function Bindings with Scopes](#function-bindings-with-scopes)
 - [Related Packages](#related-packages)
@@ -277,7 +277,7 @@ const fn = JseEval.compile('Foo.BAR + 10', options);
 const value = fn({foo: {bar: 'baz'}}); // 'baz10'
 ```
 
-### Blocklist
+### BlockList
 
 `blockList` prevents the execution of functions or the evaluation of variables, except those explictly specified. For example, blocklist may restrict the calling of the non-secure JavaScript `eval` function.
 
@@ -290,7 +290,7 @@ const ast = parse('eval("1+2")');
 const value = eval(ast, {}, options); // error: Access to member "eval" from blockList disallowed 
 ```
 
-### Allowlist
+### AllowList
 
 `allowList` explictly permits the execution of functions or the evaluation of variables. For example, allowlist may restrict the calling of the non-secure JavaScript `eval` function.
 
@@ -335,6 +335,7 @@ const value2 = eval(ast2, context, options); // Miss Kitty says meow 3 times
 ### Function Bindings with Scopes
 
 `Function Bindings` may be extended with `scopes`. Scopes faintly resemble namespaces and they allow to use the functions with the same name.
+`CurrentScopeName` and `GlobalScopeName` allow to remove reference to object instance.
 
 ```javascript
 import { parse, evaluate } from 'jse-eval';
@@ -375,7 +376,8 @@ const options = {
   scopes: {
     cat: { options: {functionBindings: {...catFunctionBindings}} },
     dog: { options: {functionBindings: {...dogFunctionBindings}} }
-  }
+  },
+  currentScopeName: 'cat'
 }
 
 const ast = parse('cat.says()');
@@ -389,6 +391,10 @@ const value3 = eval(ast3, context, options); // Miss Kitty says meow 3 times
 
 const ast4 = parse('dog.action(dog.num, "times")');
 const value4 = eval(ast4, context, options); // Ralph says woof 5 times
+
+const ast5 = parse('says()');               // reference to 'cat' is omitted because of currentScopeName
+const value5 = eval(ast, context, options); // Cat Miss Kitty says meow
+
 
 ```
 

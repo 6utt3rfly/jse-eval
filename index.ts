@@ -41,6 +41,8 @@ export type EvalOptions = {
   allowList?: string[];
   functionBindings?: Record<string, FunctionBindings>;
   scopes?: Record<string, Scope>;
+  currentScopeName?: string;
+  globalScopeName?: string;
 }
 
 const literals: Map<string, unknown> = new Map([
@@ -648,9 +650,9 @@ export default class ExpressionEval {
 
   private static getValue(obj: ContextOrObject, name: string, options: EvalOptions): unknown {
 
-    const [, value] = ExpressionEval.getKeyValuePair(obj, name, options);
+    const [, value, scopeName] = ExpressionEval.getScopedKeyValuePair(obj, name, options);
 
-    const fn = ExpressionEval.getBindFunction(value, name, options);
+    const fn = ExpressionEval.getBindFunction(value, name, options, scopeName);
     if (typeof fn === 'function') {
       return fn;
     }
@@ -672,10 +674,13 @@ export default class ExpressionEval {
   }
 
   private static getBindFunction(obj: unknown, name: string, 
-    options: EvalOptions) {
+    options: EvalOptions, scopeName?: string) {
 
-    if (typeof obj === 'function' && options?.functionBindings) {
-      const [, value] = ExpressionEval.getKeyValuePair(options.functionBindings, name, options);
+    const scopedOptions = ExpressionEval.hasProperty(options?.scopes, scopeName) 
+      ? options.scopes[scopeName]?.options : options;
+    
+    if (typeof obj === 'function' && scopedOptions?.functionBindings) {
+      const [, value] = ExpressionEval.getKeyValuePair(scopedOptions.functionBindings, name, options);
       if (value) {
         const bindings: FunctionBindings = value;
         if (bindings?.thisRef || bindings?.arguments) {
@@ -684,6 +689,39 @@ export default class ExpressionEval {
         }
       }
     }
+  }
+
+  private static hasProperty(obj?: ContextOrObject, name?: string): boolean {
+    if (obj && name) {
+      return Object.prototype.hasOwnProperty.call(obj, name);
+    }
+  }
+
+  private static getScopedKeyValuePair(obj: ContextOrObject, name: string | number, 
+    options: EvalOptions): [string | number, unknown, string] {
+
+    const scopeNameList: string[] = [''];
+    const currentScope = ExpressionEval.hasProperty(obj, options.currentScopeName) && 
+                         ExpressionEval.hasProperty(options?.scopes, options.currentScopeName); 
+    const globalScope = ExpressionEval.hasProperty(obj, options.globalScopeName) && 
+                        ExpressionEval.hasProperty(options?.scopes, options.globalScopeName);
+
+    if (currentScope) {
+      scopeNameList.push(options.currentScopeName);
+    }
+    if (globalScope) {
+      scopeNameList.push(options.globalScopeName);
+    }
+
+    for (const scopeName of scopeNameList) {
+      const scopedObject = (scopeName ? obj[scopeName] : obj) as ContextOrObject;
+      const [key, value] = this.getKeyValuePair(scopedObject, name, options);
+      if (typeof value !== 'undefined') {
+        return [key, value, scopeName];
+      }
+    }
+
+    return [name, undefined, ''];
   }
 
   private static getKeyValuePair(obj: ContextOrObject, name: string | number, 
@@ -704,7 +742,7 @@ export default class ExpressionEval {
         if (Array.isArray(keys)) {
           const key = keys.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
           if (key) {
-            const value = obj[key];
+            const value = currentObj[key];
             return [key, value];
           }
         }
