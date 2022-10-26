@@ -318,7 +318,7 @@ const context = {
 }
 
 const bindings = {
-  action: { thisRef: context, arguments: ['says', 'meow'] },
+  action: { thisRef: context, arguments: [['says', 'meow']] },
   says: { thisRef: context },
 }
 
@@ -350,7 +350,7 @@ const catObject = {
 
 const catFunctionBindings = {
   says: { thisRef: catObject },
-  action: { thisRef: catObject, arguments: ['says', 'meow']
+  action: { thisRef: catObject, arguments: [['says', 'meow']]
   },
 }
 
@@ -364,7 +364,7 @@ const dogObject = {
 
 const dogFunctionBindings = {
   says: { thisRef: dogObject },
-  action: { thisRef: dogObject, arguments: ['says', 'woof'] },
+  action: { thisRef: dogObject, arguments: [['says', 'woof']] },
 }
 
 const context = {

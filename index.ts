@@ -683,8 +683,12 @@ export default class ExpressionEval {
       const [, value] = ExpressionEval.getKeyValuePair(scopedOptions.functionBindings, name, options);
       if (value) {
         const bindings: FunctionBindings = value;
-        if (bindings?.thisRef || bindings?.arguments) {
-          const fn = obj.bind(bindings?.thisRef, bindings?.arguments);
+        if (bindings?.arguments) {
+          const args: unknown[] = bindings.arguments;
+          const fn = obj.bind(bindings?.thisRef, ...args);
+          return fn;
+        } else {
+          const fn = obj.bind(bindings?.thisRef);
           return fn;
         }
       }

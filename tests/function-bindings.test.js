@@ -12,7 +12,7 @@ const cat = {
 const catFunctionBindings = {
   action: {
     thisRef: cat,
-    arguments: ['says', 'meow']
+    arguments: [['says', 'meow']]
   },
   says: {
     thisRef: cat

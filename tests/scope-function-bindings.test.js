@@ -16,7 +16,7 @@ const catFunctionBindings = {
   },
   action: {
     thisRef: catObject,
-    arguments: ['says', 'meow']
+    arguments: [['says', 'meow']]
   },
 }
 
@@ -34,7 +34,7 @@ const dogFunctionBindings = {
   },
   action: {
     thisRef: dogObject,
-    arguments: ['says', 'woof']
+    arguments: [['says', 'woof']]
   },
 }
 
