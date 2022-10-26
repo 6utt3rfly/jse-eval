@@ -5,6 +5,8 @@
       "target": "es6",
       "declaration": true,
       "esModuleInterop": true,
-      "typeRoots": ["node_modules/@types"]
+      "typeRoots": ["node_modules/@types"],
+      "strict": false,
+      "noPropertyAccessFromIndexSignature": false
     },
 }

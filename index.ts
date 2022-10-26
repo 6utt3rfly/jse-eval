@@ -699,6 +699,7 @@ export default class ExpressionEval {
     if (obj && name) {
       return Object.prototype.hasOwnProperty.call(obj, name);
     }
+    return false;
   }
 
   private static getScopedKeyValuePair(obj: ContextOrObject, name: string | number, 
@@ -771,6 +772,7 @@ export default class ExpressionEval {
         }
       }
     }
+    return undefined;
   }
 
   private static blockListTest(obj: ContextOrObject, name: string | number, 
