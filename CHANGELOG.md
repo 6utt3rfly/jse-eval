@@ -1,3 +1,12 @@
+## [1.9.1](https://github.com/Zvenigora/jse-eval/compare/v1.9.0...v1.9.1) (2022-10-27)
+
+
+### Bug Fixes
+
+* fixed compiler options ([f55a1b0](https://github.com/Zvenigora/jse-eval/commit/f55a1b0d049b459cbb315d474ea62267028c7217))
+* fixed context for function bindings ([1a7bf35](https://github.com/Zvenigora/jse-eval/commit/1a7bf3537db0054332f824400bd629cb82861b03))
+* fixed function bundings ([2f19416](https://github.com/Zvenigora/jse-eval/commit/2f194166a0fe32e60392087cd377c0351a519987))
+
 # [1.9.0](https://github.com/Zvenigora/jse-eval/compare/v1.8.0...v1.9.0) (2022-09-08)
 
 
