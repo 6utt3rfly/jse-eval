@@ -307,6 +307,8 @@ const value = eval(ast, {}, options); // error: Access to member "eval" not in a
 
 To give the reference to `this` of the `context` or / and provide additional arguments, use `functionBindings`. The feature utilises the JavaScript `Function.prototype.bind()` method.
 
+> **_NOTE:_**  Add "allowSyntheticDefaultImports": true to compilerOptions of tsconfig.json
+
 ```javascript
 import { parse, evaluate } from 'jse-eval';
 
