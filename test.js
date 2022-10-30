@@ -25,7 +25,6 @@ registerPlugin(
 );
 
 const fixtures = [
-
   // array expression
   {expr: '([1,2,3])[0]',               expected: 1       },
   {expr: '(["one","two","three"])[1]', expected: 'two'   },
@@ -97,10 +96,11 @@ const fixtures = [
   {expr: 'foo?.["bar"]', expected: 'baz'     },
   {expr: 'unknown?.x',   expected: undefined },
 
-  // call expression with member
+  // call expression with member (and this)
   {expr: 'foo.func("bar")',  expected: 'baz'     },
   {expr: 'foo?.func("bar")', expected: 'baz'     },
   {expr: 'xxx?.func("bar")', expected: undefined },
+  {expr: 'string.slice(2)',  expected: 'ring'     },
 
   // unary expression
   {expr: '-one',   expected: -1   },
@@ -111,7 +111,12 @@ const fixtures = [
   {expr: '+[]',    expected: 0    },
 
   // 'this' context
-  {expr: 'this.three', expected: 3 },
+  {expr: 'this.three',                             expected: 3         },
+  {expr: 'thisTestFn()',                           expected: 2         },
+  {expr: '"foo".slice(1)',                         expected: 'oo'      },
+  {expr: 'thisTestArrow()',                        expected: undefined }, // global this
+  {expr: 'thisTestArrow.bind({ number: 1 })()',    expected: undefined }, // still global this
+  {expr: 'foo.func.bind({ bar: "fight" })("bar")', expected: 'fight'   }, // bind overrides function()
 
   // custom operators
   {expr: '@2',          expected: 'two' },
@@ -176,6 +181,8 @@ const context = {
   two: 2,
   three: 3,
   foo: {bar: 'baz', baz: 'wow', func: function(x) { return this[x]; }},
+  thisTestFn: function() { return this.two; },
+  thisTestArrow: () => this,
   numMap: {10: 'ten', 3: 'three'},
   list: [1,2,3,4,5],
   func: function(...x) { return x.reduce((sum, v) => sum + v, 1); },

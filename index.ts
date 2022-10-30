@@ -285,7 +285,7 @@ export default class ExpressionEval {
   private evalCallExpression(node: jsep.CallExpression) {
     return this.evalSyncAsync(this.evalCall(node.callee), ([fn, caller]) => this
       .evalSyncAsync(this.evalArray(node.arguments), args => fn
-        .apply(caller, args)));
+        .apply(caller === node.callee ? this.context : caller, args)));
   }
 
   protected evalCall(callee: jsep.Expression): unknown {
