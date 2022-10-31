@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/6utt3rfly/jse-eval/compare/v1.5.1...v1.5.2) (2022-10-31)
+
+
+### Bug Fixes
+
+* use correct binding for member and function calls ([e5207e3](https://github.com/6utt3rfly/jse-eval/commit/e5207e31fc032e12f0d8f1979be88b578648217b))
+
 ## [1.5.1](https://github.com/6utt3rfly/jse-eval/compare/v1.5.0...v1.5.1) (2022-07-10)
 
 
