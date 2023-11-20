@@ -6,6 +6,8 @@ export const context = {
   two: 2,
   three: 3,
   foo: {bar: 'baz', baz: 'wow', func: function(x) { return this[x]; }},
+  thisTestFn: function() { return this.two; },
+  thisTestArrow: () => this,
   numMap: {10: 'ten', 3: 'three'},
   list: [1,2,3,4,5],
   func: function(...x) { return x.reduce((sum, v) => sum + v, 1); },

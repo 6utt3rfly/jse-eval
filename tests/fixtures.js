@@ -71,10 +71,11 @@ export const fixtures = [
   {expr: 'foo?.["bar"]', expected: 'baz'     },
   {expr: 'unknown?.x',   expected: undefined },
 
-  // call expression with member
+  // call expression with member (and this)
   {expr: 'foo.func("bar")',  expected: 'baz'     },
   {expr: 'foo?.func("bar")', expected: 'baz'     },
   {expr: 'xxx?.func("bar")', expected: undefined },
+  {expr: 'string.slice(2)',  expected: 'ring'    },
 
   // unary expression
   {expr: '-one',   expected: -1   },
@@ -86,7 +87,13 @@ export const fixtures = [
 
   // 'this' context
   {expr: 'this.three', expected: 3 },
-
+  {expr: 'this.three',                             expected: 3         },
+  {expr: 'thisTestFn()',                           expected: 2         },
+  {expr: '"foo".slice(1)',                         expected: 'oo'      },
+  {expr: 'thisTestArrow()',                        expected: undefined }, // global this
+  {expr: 'thisTestArrow.bind({ number: 1 })()',    expected: undefined }, // still global this
+  {expr: 'foo.func.bind({ bar: "fight" })("bar")', expected: 'fight'   }, // bind overrides function()
+  
   // custom operators
   {expr: '@2',          expected: 'two' },
   {expr: '3#4',         expected: 3.4   },
