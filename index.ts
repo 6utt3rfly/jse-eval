@@ -13,7 +13,6 @@ import jsep from 'jsep';
  */
 
 export declare type Context = Record<string, unknown>;
-export declare type ContextOrObject = Record<string, unknown> | object;
 export declare type operand = any;
 export declare type unaryCallback = (a: operand) => operand;
 export declare type binaryCallback = (a: operand, b: operand) => operand;
@@ -27,7 +26,7 @@ export type JseEvalPlugin = Partial<jsep.IPlugin> & {
 }
 
 export type FunctionBindings = {
-  thisRef?: ContextOrObject,
+  thisRef?: Context,
   arguments?: unknown[]
 }
 
@@ -45,12 +44,13 @@ export type EvalOptions = {
   globalScopeName?: string;
 }
 
-const literals: Map<string, unknown> = new Map([
-  ['undefined', undefined],
-  ['null', null],
-  ['true', true],
-  ['false', false],
-]);
+const literals: Context = {
+  'undefined': undefined,
+  'null': null,
+  'true': true,
+  'false': false,
+}
+
 
 export default class ExpressionEval {
   static jsep = jsep;
@@ -327,7 +327,6 @@ export default class ExpressionEval {
   private evalCallExpression(node: jsep.CallExpression) {
     return this.evalSyncAsync(this.evalCall(node.callee), ([fn, caller]) => this
       .evalSyncAsync(this.evalArray(node.arguments), args => fn
-        // .apply(caller, args)));  // shelly
         .apply(caller === node.callee ? this.context : caller, args)));
   }
 
@@ -649,7 +648,7 @@ export default class ExpressionEval {
           && ((callee as jsep.MemberExpression).property as jsep.Identifier).name));
   }
 
-  private static getValue(obj: ContextOrObject, name: string, options: EvalOptions): unknown {
+  private static getValue(obj: Context, name: string, options: EvalOptions): unknown {
 
     const [, value, scopeName] = ExpressionEval.getScopedKeyValuePair(obj, name, options);
 
@@ -696,14 +695,14 @@ export default class ExpressionEval {
     }
   }
 
-  private static hasProperty(obj?: ContextOrObject, name?: string): boolean {
+  private static hasProperty(obj?: Context, name?: string): boolean {
     if (obj && name) {
       return Object.prototype.hasOwnProperty.call(obj, name);
     }
     return false;
   }
 
-  private static getScopedKeyValuePair(obj: ContextOrObject, name: string | number, 
+  private static getScopedKeyValuePair(obj: Context, name: string | number, 
     options: EvalOptions): [string | number, unknown, string] {
 
     const scopeNameList: string[] = [''];
@@ -720,7 +719,7 @@ export default class ExpressionEval {
     }
 
     for (const scopeName of scopeNameList) {
-      const scopedObject = (scopeName ? obj[scopeName] : obj) as ContextOrObject;
+      const scopedObject = (scopeName ? obj[scopeName] : obj) as Context;
       const [key, value] = this.getKeyValuePair(scopedObject, name, options);
       if (typeof value !== 'undefined') {
         return [key, value, scopeName];
@@ -730,7 +729,7 @@ export default class ExpressionEval {
     return [name, undefined, ''];
   }
 
-  private static getKeyValuePair(obj: ContextOrObject, name: string | number, 
+  private static getKeyValuePair(obj: Context, name: string | number, 
     options: EvalOptions): [string | number, unknown] {
 
     ExpressionEval.blockListTest(obj, name, options);
@@ -758,15 +757,15 @@ export default class ExpressionEval {
     return [name, undefined];
   }
 
-  private static getLiteralPair(map: Map<string, unknown>, name: string, options: EvalOptions): [string, unknown] {
+  private static getLiteralPair(obj: Context, name: string, options: EvalOptions): [string, unknown] {
 
-    ExpressionEval.blockListTest(map, name, options);
-    ExpressionEval.allowListTest(map, name, options);
+    ExpressionEval.blockListTest(obj, name, options);
+    ExpressionEval.allowListTest(obj, name, options);
   
     if (options.caseSensitive) {
-      return map[name];
+      return [name, obj[name]];
     } else {
-      for (const [key, value] of map) {
+      for (const [key, value] of Object.entries(obj)) {
         const found = key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0;
         if (found) {
           return [key, value];
@@ -776,7 +775,7 @@ export default class ExpressionEval {
     return undefined;
   }
 
-  private static blockListTest(obj: ContextOrObject, name: string | number, 
+  private static blockListTest(obj: Context, name: string | number, 
     options: EvalOptions): void {
     if (options.blockList && typeof name === 'string') {
 
@@ -790,7 +789,7 @@ export default class ExpressionEval {
     }
   }
 
-  private static allowListTest(obj: ContextOrObject, name: string | number, 
+  private static allowListTest(obj: Context, name: string | number, 
     options: EvalOptions): void {
     if (options.allowList && typeof name === 'string') {
 
