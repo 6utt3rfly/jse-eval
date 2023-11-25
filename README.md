@@ -201,13 +201,13 @@ console.log(expr.evalExpr('2 ** 3 ** 2')); // 512
 expr.addBinaryOp('^', 11, (a, b) => Math.pow(a, b)); // Replace XOR with Exponent
 console.log(expr.evalExpr('3^2')); // 9
 
-expr.addEvaluator('TestNodeType', function(node) {
+expr.addEvaluator('TestNodeType', function(node, context) {
   return node.test + this.context.string
 });
 console.log(expr.eval({ type: 'TestNodeType', test: 'testing ' }, { string: 'jse-eval' })); // 'testing jse-eval'
 
 // override default implementation:
-expr.addEvaluator('Identifier', function myIdentifier(node: Identifier) {
+expr.addEvaluator('Identifier', function myIdentifier(node: Identifier, context: Context) {
   return context?.[node.name];
 });
 console.log(expr.eval({ type: 'Identifier', name: 'x' }, { x: 'jse-eval' })); // 'jse-eval'

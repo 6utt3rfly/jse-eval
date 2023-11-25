@@ -18,8 +18,12 @@ export declare type unaryCallback = (a: operand) => operand;
 export declare type binaryCallback = (a: operand, b: operand) => operand;
 export declare type assignCallback = (obj: Record<string, operand>, key: string, val: operand) => operand;
 export declare type evaluatorCallback<T extends AnyExpression> = (this: ExpressionEval, node: T, context?: Context) => unknown;
+export declare type predicateCallback<T extends AnyExpression> = 
+  (node: T, context?: Context) => boolean;
+export declare type conditionalEvaluator<T extends AnyExpression> = 
+  {predicate: predicateCallback<T>, evaluator: evaluatorCallback<T>};
 
-export type AnyExpression = jsep.Expression;
+export type AnyExpression = jsep.Expression & {_value?: unknown, _scope?: Scope};
 
 export type JseEvalPlugin = Partial<jsep.IPlugin> & {
   initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
@@ -51,7 +55,6 @@ const literals: Context = {
   'false': false,
 }
 
-
 export default class ExpressionEval {
   static jsep = jsep;
   static parse = jsep;
@@ -79,6 +82,9 @@ export default class ExpressionEval {
     'SpreadElement': ExpressionEval.prototype.evalSpreadElement,
     'TaggedTemplateExpression': ExpressionEval.prototype.evalTaggedTemplateExpression,
     'TemplateLiteral': ExpressionEval.prototype.evalTemplateLiteral,
+  };
+
+  static conditionalEvaluators: Record<string, conditionalEvaluator<AnyExpression>[]> = {
   };
 
   // Default operator precedence from https://github.com/EricSmekens/jsep/blob/master/src/jsep.js#L55
@@ -192,6 +198,16 @@ export default class ExpressionEval {
     ExpressionEval.evaluators[nodeType] = evaluator;
   }
 
+  // inject conditional evaluators
+  static addConditionalEvaluator<T extends AnyExpression>(nodeType: string,
+    predicate: predicateCallback<T>,
+    evaluator: evaluatorCallback<T>): void {
+    if(!ExpressionEval.conditionalEvaluators[nodeType]) {
+      ExpressionEval.conditionalEvaluators[nodeType] = [];
+    }
+    ExpressionEval.conditionalEvaluators[nodeType].push({evaluator, predicate});
+  }
+
   static registerPlugin(...plugins: Array<JseEvalPlugin>) {
     plugins.forEach((p) => {
       if (p.init) {
@@ -212,6 +228,7 @@ export default class ExpressionEval {
   static eval(ast: jsep.Expression, context?: Context, options?: EvalOptions): unknown {
     return (new ExpressionEval(context, undefined, options)).eval(ast);
   }
+
   static async evalAsync(ast: jsep.Expression, context?: Context, options?: EvalOptions): Promise<unknown> {
     return (new ExpressionEval(context, true, options)).eval(ast);
   }
@@ -220,6 +237,7 @@ export default class ExpressionEval {
   static compile(expression: string): (context?: Context) => unknown {
     return ExpressionEval.eval.bind(null, ExpressionEval.jsep(expression));
   }
+
   static compileAsync(expression: string): (context?: Context) => Promise<unknown> {
     return ExpressionEval.evalAsync.bind(null, ExpressionEval.jsep(expression));
   }
@@ -247,12 +265,28 @@ export default class ExpressionEval {
     this.options = options || ExpressionEval.defaultOptions;
   }
 
-  public eval(node: unknown, cb = v => v): unknown {
-    const evaluator = ExpressionEval.evaluators[(node as jsep.Expression).type]
-      || ExpressionEval.evaluators.default;
-    if (!evaluator) {
+  public eval(node: AnyExpression, cb = v => v): unknown {
+
+    const list = ExpressionEval.conditionalEvaluators[node.type];
+    if (list) {
+      for (const proba of list) {
+        const found = proba.predicate.call(this, node, this.context);
+        if (found) {
+          const conditionalEvaluator = proba.evaluator;
+          return this.evalSyncAsync(conditionalEvaluator.bind(this)(node, this.context), (v) => {
+            (node as any)._value = v;
+            return cb(v);
+          });
+        }
+      }
+    }
+
+    const evaluator = ExpressionEval.evaluators[node.type];
+
+    if (typeof evaluator === 'undefined') {
       throw new Error(`unknown node type: ${JSON.stringify(node, null, 2)}`);
     }
+
     return this.evalSyncAsync(evaluator.bind(this)(node, this.context), (v) => {
       (node as any)._value = v;
       return cb(v);
@@ -423,8 +457,8 @@ export default class ExpressionEval {
     ((node.params as AnyExpression[]) || []).forEach((param, i) => {
       // default value:
       if (param.type === 'AssignmentExpression') {
-        if (arrowArgs[i] === undefined) {
-          arrowArgs[i] = this.eval(param.right);
+        if (typeof arrowArgs[i] === 'undefined') {
+          arrowArgs[i] = this.eval((param as AssignmentExpression).right);
         }
         param = param.left as AnyExpression;
       }
@@ -436,9 +470,9 @@ export default class ExpressionEval {
         (param.elements as AnyExpression[]).forEach((el, j) => {
           let val = arrowArgs[i][j];
           if (el.type === 'AssignmentExpression') {
-            if (val === undefined) {
+            if (typeof val === 'undefined') {
               // default value
-              val = this.eval(el.right);
+              val = this.eval((el as AssignmentExpression).right);
             }
             el = el.left as AnyExpression;
           }
@@ -462,7 +496,7 @@ export default class ExpressionEval {
           if (p.type === 'Property') {
             key = (<jsep.Expression>p.key).type === 'Identifier'
               ? (p.key as jsep.Identifier).name
-              : this.eval(p.key).toString();
+              : this.eval((p as Property).key).toString();
           } else if (p.type === 'Identifier') {
             key = p.name;
           } else if (p.type === 'SpreadElement' && (<jsep.Expression>p.argument).type === 'Identifier') {
@@ -478,9 +512,9 @@ export default class ExpressionEval {
             keys.forEach((k) => {
               delete val[k];
             });
-          } else if (val === undefined && prop.type === 'AssignmentExpression') {
+          } else if (typeof val === 'undefined' && prop.type === 'AssignmentExpression') {
             // default value
-            val = this.eval(prop.right);
+            val = this.eval((prop as AssignmentExpression).right);
           }
 
           arrowContext[key] = val;
@@ -540,7 +574,7 @@ export default class ExpressionEval {
       const [key, ] = ExpressionEval.getKeyValuePair(this.context, node.name as string | number, this.options);
       return [this.context, key];
     } else if (node.type === 'ConditionalExpression') {
-      return this.eval(node.test, test => this
+      return this.eval((node as jsep.ConditionalExpression).test, test => this
         .getContextAndKey((test
           ? node.consequent
           : node.alternate) as AnyExpression));

@@ -10,8 +10,8 @@ const _value = _action('q', 'w', 'e');
 const act = action('q');
 const value = act('w', 'e');
 
-console.log('_value', _value);
-console.log('value', value);
+// console.log('_value', _value);
+// console.log('value', value);
 
 
 
