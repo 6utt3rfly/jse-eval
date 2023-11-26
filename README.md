@@ -184,6 +184,7 @@ or `this.evalSyncAsync()` to help.
   - If the node type is unknown, jse-eval will check for a `default` node type handler before
   throwing an error for an unknown node type. If any other behavior is desired, this can be overridden
   by providing a new `default` evaluator.
+- `addConditionalEvaluator(nodeType, predicate, evaluator)`. Will evaluate predicate function and add the evaluator function to the map of functions for each node type.
 
 Extensions may also be added as plugins using the `registerPlugin(myPlugin1, myPlugin2...)` method.
 The plugins are extensions of the JSEP format. If the `init` method is defined in the plugin,

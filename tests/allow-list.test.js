@@ -20,7 +20,7 @@ const allowListContext = {
   func: function(...x) { return x.reduce((sum, v) => sum + v, 1); },
 }
 
-const expectedMsg = /Access to member "\w+" not in allowList disallowed/;
+const expectedMsg = /Access to member "\w+" not in allowList is not permitted./;
 
 tape('allowList', (t) => {
 

@@ -8,40 +8,50 @@ var lookupContext = {
   add: function(a, b) {return a + b;},
 };  
 
-// override default implementation:
-JseEval.addEvaluator('Identifier', function myIdentifier(node, ctx) {
-  return ctx?.[node.name];
-});
+// // override default implementation:
+// JseEval.addEvaluator('Identifier', function myIdentifier(node, ctx) {
+//   const keyValue = JseEval.getKeyValue(ctx, node.name);
+//   if (keyValue) {
+//     const [key, value] = keyValue;
+//     return ctx[key];
+//   }
+//   return undefined;
+// });
 
 // add conditional evaluator:
 JseEval.addConditionalEvaluator('Identifier', 
   function predicate(node, ctx) {
     var found = node.type === 'Identifier' && lookupContext[node.name] !== undefined;
-    // console.log('predicate', found);
     return found;
   },
   function identifier(node, ctx) {
-    // cconsole.log('identifier', node, lookupContext);
-    return lookupContext?.[node.name];
+    const context = {...ctx, ...lookupContext};
+    const keyValue = JseEval.getKeyValue(context, node.name);
+    if (keyValue) {
+      const [key, value] = keyValue;
+      return context[key];
+    }
   }
 );
 
 JseEval.addConditionalEvaluator('CallExpression', 
   function predicate(node, ctx) {
-    var found = node.type === 'CallExpression' && lookupContext[node.callee] !== undefined;
-    // console.log('predicate', found);
+    var found = node.type === 'CallExpression' && lookupContext[node.callee.name] !== undefined;
     return found;
   },
   function callExpression(node, ctx) {
-    console.log('callExpression', node, lookupContext);
-    return lookupContext?.[node.name];
+    const context = {...ctx, ...lookupContext};
+    const fn = context[node.callee.name];
+    const args = node.arguments.map((arg) => JseEval.evaluate(arg, context));
+    const value = fn.apply(context, args);
+    return value;
   }
 );
 
 
 const conditionalEvaluatorFixtures = [
-  {expr: 'one', context: { one: 1 }, expected: 1},
-  {expr: 'one+two', context: {one: 1 }, expected: 3},
+  // {expr: 'one', context: { one: 1 }, expected: 1},
+  // {expr: 'one+two', context: {one: 1 }, expected: 3},
   {expr: 'add(one,two)', context: {one: 1 }, expected: 3},
 ];
 

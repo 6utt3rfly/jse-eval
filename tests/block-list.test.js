@@ -22,7 +22,7 @@ const blockListContext = {
 
 tape('blockList', (t) => {
 
-  const expectedMsg = /Access to member "\w+" from blockList disallowed/;
+  const expectedMsg = /Access to member "\w+" from blockList is not permitted./;
 
   [...blockListFixtures].forEach((o) => {
     const ctx = cloneDeep(blockListContext);

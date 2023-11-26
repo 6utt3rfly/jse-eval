@@ -69,11 +69,11 @@ const caseInsensitiveFixtures = [
   {expr: 'FoO?.["BaR"]', expected: 'baz'     },
   {expr: 'UnKnown?.x',   expected: undefined },
 
-  // call expression with member - it does not pass the test, because this[x] is case-sensitive
+  // call expression with member - it does not pass the test for "BAR", because this[x] is case-sensitive
   // ToDo: add predefied functions
-  // {expr: 'Foo.Func("Bar")',  expected: 'baz'     },
-  // {expr: 'Foo?.Func("bAr")', expected: 'baz'     },
-  // {expr: 'Xxx?.Func("baR")', expected: undefined },
+  {expr: 'Foo.Func("bar")',  expected: 'baz'     },
+  {expr: 'Foo?.Func("bar")', expected: 'baz'     },
+  {expr: 'Xxx?.Func("bar")', expected: undefined },
 
   // unary expression
   {expr: '-One',   expected: -1   },

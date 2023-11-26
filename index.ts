@@ -7,12 +7,14 @@ import { SpreadElement } from '@jsep-plugin/spread';
 import { TaggedTemplateExpression, TemplateLiteral } from '@jsep-plugin/template';
 import jsep from 'jsep';
 
+import { Context, Options, Scope, literals } from './types';
+import { Utils } from './utils';
+
 /**
  * Evaluation code from JSEP project, under MIT License.
  * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
  */
 
-export declare type Context = Record<string, unknown>;
 export declare type operand = any;
 export declare type unaryCallback = (a: operand) => operand;
 export declare type binaryCallback = (a: operand, b: operand) => operand;
@@ -27,32 +29,6 @@ export type AnyExpression = jsep.Expression & {_value?: unknown, _scope?: Scope}
 
 export type JseEvalPlugin = Partial<jsep.IPlugin> & {
   initEval?: (this: typeof ExpressionEval, jseEval: typeof ExpressionEval) => void;
-}
-
-export type FunctionBindings = {
-  thisRef?: Context,
-  arguments?: unknown[]
-}
-
-export type Scope = {
-  options?: EvalOptions;
-}
-
-export type EvalOptions = {
-  caseSensitive?: boolean;
-  blockList?: string[];
-  allowList?: string[];
-  functionBindings?: Record<string, FunctionBindings>;
-  scopes?: Record<string, Scope>;
-  currentScopeName?: string;
-  globalScopeName?: string;
-}
-
-const literals: Context = {
-  'undefined': undefined,
-  'null': null,
-  'true': true,
-  'false': false,
 }
 
 export default class ExpressionEval {
@@ -159,7 +135,7 @@ export default class ExpressionEval {
     '|=': function(obj, key, val) { return obj[key] |= val; },
   };
 
-  static defaultOptions: EvalOptions = {
+  static defaultOptions: Options = {
     caseSensitive: true
   }
 
@@ -220,16 +196,16 @@ export default class ExpressionEval {
   }
 
   // inject default Options
-  static addOptions(options: EvalOptions): void {
+  static addOptions(options: Options): void {
     ExpressionEval.defaultOptions = options;
   }
 
   // main evaluator method
-  static eval(ast: jsep.Expression, context?: Context, options?: EvalOptions): unknown {
+  static eval(ast: jsep.Expression, context?: Context, options?: Options): unknown {
     return (new ExpressionEval(context, undefined, options)).eval(ast);
   }
 
-  static async evalAsync(ast: jsep.Expression, context?: Context, options?: EvalOptions): Promise<unknown> {
+  static async evalAsync(ast: jsep.Expression, context?: Context, options?: Options): Promise<unknown> {
     return (new ExpressionEval(context, true, options)).eval(ast);
   }
 
@@ -253,13 +229,13 @@ export default class ExpressionEval {
 
   context?: Context;
   isAsync?: boolean;
-  options?: EvalOptions;
+  options?: Options;
 
   get caseSensitive() {
     return !!(this.options && this.options.caseSensitive);
   }
 
-  constructor(context?: Context, isAsync?: boolean, options?: EvalOptions) {
+  constructor(context?: Context, isAsync?: boolean, options?: Options) {
     this.context = context;
     this.isAsync = isAsync;
     this.options = options || ExpressionEval.defaultOptions;
@@ -370,6 +346,10 @@ export default class ExpressionEval {
         this.evaluateMember(callee as jsep.MemberExpression),
         ([caller, fn]) => ExpressionEval.validateFnAndCall(fn, caller, callee as AnyExpression)
       );
+    } else if (callee.type === 'Identifier') {
+      //const [, fn] = Utils.getKeyValue(this.context, (callee as jsep.Identifier).name, this.options);
+      const fn = Utils.getValue(this.context, (callee as jsep.Identifier).name, this.options);
+      return ExpressionEval.validateFnAndCall(fn as () => unknown, callee as AnyExpression);
     }
     return this.eval(callee, fn => ExpressionEval.validateFnAndCall(fn, callee as AnyExpression));
   }
@@ -382,21 +362,22 @@ export default class ExpressionEval {
 
   private evalIdentifier(node: jsep.Identifier) {
     if (this.caseSensitive) {
-      const value = ExpressionEval.getValue(this.context, node.name, this.options);
+      const value = Utils.getValue(this.context, node.name, this.options);
       return value;
     } else if (node.name.localeCompare('this', 'en', { sensitivity: 'base' }) === 0) {
       return this.evalThisExpression();
     } else {
-      const literal = ExpressionEval.getLiteralPair(literals, node.name, this.options);
+      const literal = Utils.getLiteralKeyValue(literals, node.name, this.options);
       if (literal) {
         const [, value] = literal;
         return value;
       }
-      const value = ExpressionEval.getValue(this.context, node.name, this.options);
+      const value = Utils.getValue(this.context, node.name, this.options);
 
-      if (value && this.options.scopes) {
-        const [, scope] = ExpressionEval.getScopePair(this.context, node.name, this.options);
-        if (scope) {
+      if (typeof value !== 'undefined' && this.options.scopes) {
+        const scopePair = Utils.getScopePair(this.context, node.name, this.options);
+        if (scopePair) {
+          const [, scope] = scopePair;
           (node as any)._scope = scope;
         }
       }
@@ -426,7 +407,7 @@ export default class ExpressionEval {
           const obj = (node.optional ? (object || {}) : object);
           const scope: Scope = node.object._scope as Scope;
           const options = scope ? {...this.options, ...scope.options} : this.options;
-          const value = ExpressionEval.getValue(obj, key, options);
+          const value = Utils.getValue(obj, key, options);
           return [object, value, key];
         })
     );
@@ -566,12 +547,14 @@ export default class ExpressionEval {
       return this.evalSyncAsync(
         this.evaluateMember(<jsep.MemberExpression>node),
         ([obj, , key]) => {
-          const [newKey, ] = ExpressionEval.getKeyValuePair(obj, key, this.options);
+          const keyValue = Utils.getKeyValue(obj, key, this.options);
+          const [newKey, ] = keyValue ? keyValue : [key, undefined];
           return [obj, newKey];
         }
       );
     } else if (node.type === 'Identifier') {
-      const [key, ] = ExpressionEval.getKeyValuePair(this.context, node.name as string | number, this.options);
+      const keyValue = Utils.getKeyValue(this.context, node.name as string | number, this.options);
+      const [key, ] = keyValue ? keyValue : [node.name, undefined];
       return [this.context, key];
     } else if (node.type === 'ConditionalExpression') {
       return this.eval((node as jsep.ConditionalExpression).test, test => this
@@ -682,160 +665,12 @@ export default class ExpressionEval {
           && ((callee as jsep.MemberExpression).property as jsep.Identifier).name));
   }
 
-  private static getValue(obj: Context, name: string, options: EvalOptions): unknown {
+  static getKeyValue(obj: Context, name: string | number, 
+    options: Options): [string | number, unknown] {
 
-    const [, value, scopeName] = ExpressionEval.getScopedKeyValuePair(obj, name, options);
-
-    const fn = ExpressionEval.getBindFunction(value, name, options, scopeName);
-    if (typeof fn === 'function') {
-      return fn;
-    }
-      
-    return value;
+    return Utils.getKeyValue(obj, name, options);
   }
 
-  private static getScopePair(obj: unknown, name: string, 
-    options: EvalOptions): [string | number, Scope] {
-
-    if (typeof obj !== 'undefined' && options?.scopes) {
-      const [key, value] = ExpressionEval.getKeyValuePair(options.scopes, name, options);
-      if (value) {
-        const scope: Scope = value;
-        return [key, scope];
-      }
-    }
-    return [name, undefined];
-  }
-
-  private static getBindFunction(obj: unknown, name: string, 
-    options: EvalOptions, scopeName?: string) {
-
-    const scopedOptions = ExpressionEval.hasProperty(options?.scopes, scopeName) 
-      ? options.scopes[scopeName]?.options : options;
-    
-    if (typeof obj === 'function' && scopedOptions?.functionBindings) {
-      const [, value] = ExpressionEval.getKeyValuePair(scopedOptions.functionBindings, name, options);
-      if (value) {
-        const bindings: FunctionBindings = value;
-        if (bindings?.arguments) {
-          const args: unknown[] = bindings.arguments;
-          const fn = obj.bind(bindings?.thisRef, ...args);
-          return fn;
-        } else {
-          const fn = obj.bind(bindings?.thisRef);
-          return fn;
-        }
-      }
-    }
-  }
-
-  private static hasProperty(obj?: Context, name?: string): boolean {
-    if (obj && name) {
-      return Object.prototype.hasOwnProperty.call(obj, name);
-    }
-    return false;
-  }
-
-  private static getScopedKeyValuePair(obj: Context, name: string | number, 
-    options: EvalOptions): [string | number, unknown, string] {
-
-    const scopeNameList: string[] = [''];
-    const currentScope = ExpressionEval.hasProperty(obj, options.currentScopeName) && 
-                         ExpressionEval.hasProperty(options?.scopes, options.currentScopeName); 
-    const globalScope = ExpressionEval.hasProperty(obj, options.globalScopeName) && 
-                        ExpressionEval.hasProperty(options?.scopes, options.globalScopeName);
-
-    if (currentScope) {
-      scopeNameList.push(options.currentScopeName);
-    }
-    if (globalScope) {
-      scopeNameList.push(options.globalScopeName);
-    }
-
-    for (const scopeName of scopeNameList) {
-      const scopedObject = (scopeName ? obj[scopeName] : obj) as Context;
-      const [key, value] = this.getKeyValuePair(scopedObject, name, options);
-      if (typeof value !== 'undefined') {
-        return [key, value, scopeName];
-      }
-    }
-
-    return [name, undefined, ''];
-  }
-
-  private static getKeyValuePair(obj: Context, name: string | number, 
-    options: EvalOptions): [string | number, unknown] {
-
-    ExpressionEval.blockListTest(obj, name, options);
-    ExpressionEval.allowListTest(obj, name, options);
-
-    if (options.caseSensitive || typeof name !== 'string') {
-      const value = obj[name];
-      return [name, value];
-    }
-
-    if (typeof name === 'string') {
-      let currentObj = obj;
-      do {
-        const keys: string[] = Object.getOwnPropertyNames(currentObj);
-        if (Array.isArray(keys)) {
-          const key = keys.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
-          if (key) {
-            const value = currentObj[key];
-            return [key, value];
-          }
-        }
-      } while ((currentObj = Object.getPrototypeOf(currentObj)));
-    }
-
-    return [name, undefined];
-  }
-
-  private static getLiteralPair(obj: Context, name: string, options: EvalOptions): [string, unknown] {
-
-    ExpressionEval.blockListTest(obj, name, options);
-    ExpressionEval.allowListTest(obj, name, options);
-  
-    if (options.caseSensitive) {
-      return [name, obj[name]];
-    } else {
-      for (const [key, value] of Object.entries(obj)) {
-        const found = key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0;
-        if (found) {
-          return [key, value];
-        }
-      }
-    }
-    return undefined;
-  }
-
-  private static blockListTest(obj: Context, name: string | number, 
-    options: EvalOptions): void {
-    if (options.blockList && typeof name === 'string') {
-
-      const find = options.caseSensitive 
-        ? options.blockList.find(key => key === name)
-        : options.blockList.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
-
-      if (find) {
-        throw Error(`Access to member "${name}" from blockList disallowed.`);        
-      }
-    }
-  }
-
-  private static allowListTest(obj: Context, name: string | number, 
-    options: EvalOptions): void {
-    if (options.allowList && typeof name === 'string') {
-
-      const find = options.caseSensitive 
-        ? options.allowList.find(key => key === name)
-        : options.allowList.find(key => key.localeCompare(name, 'en', { sensitivity: 'base' }) === 0);
-
-      if (!find) {
-        throw Error(`Access to member "${name}" not in allowList disallowed.`);        
-      }
-    }
-  }
 }
 
 /** NOTE: exporting named + default.
@@ -858,3 +693,4 @@ export const compile = ExpressionEval.compile;
 export const compileAsync = ExpressionEval.compileAsync;
 export const evalExpr = ExpressionEval.evalExpr;
 export const evalExprAsync = ExpressionEval.evalExprAsync;
+export const getKeyValue = ExpressionEval.getKeyValue;
