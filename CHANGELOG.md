@@ -1,3 +1,16 @@
+# [1.10.0](https://github.com/Zvenigora/jse-eval/compare/v1.9.1...v1.10.0) (2023-12-31)
+
+
+### Bug Fixes
+
+* fixed context ([4289a18](https://github.com/Zvenigora/jse-eval/commit/4289a18e91f89416a672c1eb676a16531fddfb5f))
+
+
+### Features
+
+* added conditional evaluators ([adb2032](https://github.com/Zvenigora/jse-eval/commit/adb20328f3195e761fda4ac9c75545850597b752))
+* added conditional evaluators ([0649d0b](https://github.com/Zvenigora/jse-eval/commit/0649d0b0b30007328ffdbcb0c48f90d5806517aa))
+
 ## [1.9.1](https://github.com/Zvenigora/jse-eval/compare/v1.9.0...v1.9.1) (2022-10-27)
 
 
